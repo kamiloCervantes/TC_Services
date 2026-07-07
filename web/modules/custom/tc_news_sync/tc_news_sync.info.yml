@@ -1,0 +1,5 @@
+name: 'tc_news_sync'
+type: module
+description: 'Sincronización de noticias de Tierra Caliente'
+package: tcapi
+core_version_requirement: ^10 || ^11

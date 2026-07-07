@@ -1,0 +1,62 @@
+# Directorios generados por Composer
+vendor/
+drush/contrib/
+
+
+# Archivos de configuración que pueden contener información sensible
+# (Normalmente, settings.php se mantiene fuera del control de versiones,
+# o se versiona una versión "ejemplo" y se excluye la local)
+web/sites/*/settings.php
+web/sites/*/services.yml
+web/sites/*/settings.local.php # Para entornos de desarrollo locales
+
+# Archivos que contienen contenido generado por el usuario
+web/sites/*/files/css
+web/sites/*/files/js
+web/sites/*/files/php/*
+web/sites/*/files/qrcodes
+web/sites/*/files/styles
+web/sites/*/files/.htaccess
+web/sites/*/files/private
+web/sites/*/private/
+web/sites/*/files/202*
+web/sites/*/files/*.png
+
+# Archivos de la base de datos (si se usa SQLite o dumps)
+*.sqlite
+*.sql
+
+# Archivos y directorios de entornos de desarrollo comunes
+.idea/             # IntelliJ IDEA / PHPStorm
+.vscode/           # VS Code
+.env               # Variables de entorno (Dotenv)
+.ddev/             # DDEV (si lo usas para desarrollo local)
+.vagrant/          # Vagrant
+node_modules/      # Dependencias de Node.js (si usas frontend tools)
+dist/              # Directorios de build para frontend
+tmp/               # Directorios temporales
+logs/              # Archivos de logs
+
+# Archivos del sistema operativo
+.DS_Store          # macOS
+Thumbs.db          # Windows
+
+
+# Archivos de caché
+*/cache/
+*/temporary/
+core/
+/autoload.php
+/example.gitignore
+
+
+#themes
+web/themes/contrib/*
+!web/themes/contrib/bootstrap_barrio/
+web/themes/contrib/bootstrap_barrio/*
+!web/themes/contrib/bootstrap_barrio/subtheme/
+
+
+#otros
+web/update.php
+drush/sites/self.site.yml

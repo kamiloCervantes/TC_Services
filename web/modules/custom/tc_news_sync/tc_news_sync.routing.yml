@@ -1,0 +1,15 @@
+tc_news_sync.admin_menu:
+  path: '/admin/config/servicios-tc'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Servicios TC'
+  requirements:
+    _permission: 'administer site configuration'
+
+tc_news_sync.sync_form:
+  path: '/admin/config/servicios-tc/sincronizacion-noticias'
+  defaults:
+    _form: '\Drupal\tc_news_sync\Form\SyncNewsForm'
+    _title: 'Sincronización de noticias'
+  requirements:
+    _permission: 'administer site configuration'

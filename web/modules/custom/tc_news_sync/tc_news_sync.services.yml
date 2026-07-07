@@ -1,0 +1,4 @@
+services:
+  tc_news_sync.sync_service:
+    class: Drupal\tc_news_sync\Service\SyncService
+    arguments: ['@http_client', '@entity_type.manager', '@logger.factory', '@file_system']

@@ -1,0 +1,13 @@
+tc_news_sync.admin_menu:
+  title: 'Servicios TC'
+  description: 'Funcionalidades administrativas del módulo Servicios TC.'
+  parent: system.admin_config
+  route_name: tc_news_sync.admin_menu
+  weight: 100
+
+tc_news_sync.sync_form:
+  title: 'Sincronización de noticias'
+  description: 'Ejecutar sincronización de noticias.'
+  parent: tc_news_sync.admin_menu
+  route_name: tc_news_sync.sync_form
+  weight: 10

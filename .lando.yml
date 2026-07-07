@@ -1,0 +1,30 @@
+name: tierra-caliente-services-wsl
+recipe: drupal11
+proxy:
+  appserver:
+    - tierra-caliente-services-app.lndo.site
+config:
+  php: '8.4'
+  via: apache
+  webroot: web
+  database: mysql
+  drush: global:12
+services:
+  database:
+    type: mysql:8.0
+    port: 3306
+    healthcheck:
+      command: mysql --defaults-extra-file=/app/.lando/mysql/healthcheck.cnf --silent --execute "SHOW DATABASES;"
+  pma:
+    type: phpmyadmin:5.2
+    hosts:
+      - database
+php:
+  memory_limit: 512M
+  extensions:
+    - gd
+    - mbstring
+
+
+
+

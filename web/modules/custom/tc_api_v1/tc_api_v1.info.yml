@@ -1,0 +1,5 @@
+name: 'tc_api_v1'
+type: module
+description: 'Tierra Caliente API Services V1'
+package: tcapi
+core_version_requirement: ^10 || ^11
