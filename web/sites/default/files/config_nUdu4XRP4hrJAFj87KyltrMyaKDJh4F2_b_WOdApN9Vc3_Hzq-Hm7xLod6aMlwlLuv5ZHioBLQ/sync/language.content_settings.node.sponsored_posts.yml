@@ -1,0 +1,11 @@
+uuid: 8eef368a-0167-4b62-8f74-637fc868993c
+langcode: es
+status: true
+dependencies:
+  config:
+    - node.type.sponsored_posts
+id: node.sponsored_posts
+target_entity_type_id: node
+target_bundle: sponsored_posts
+default_langcode: site_default
+language_alterable: false

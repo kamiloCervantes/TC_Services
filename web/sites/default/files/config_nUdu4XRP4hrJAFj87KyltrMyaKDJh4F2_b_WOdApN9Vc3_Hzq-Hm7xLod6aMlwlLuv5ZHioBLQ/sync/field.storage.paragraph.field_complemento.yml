@@ -1,0 +1,19 @@
+uuid: d96965be-b1f8-41a9-bf37-9930d715bfb5
+langcode: es
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.field_complemento
+field_name: field_complemento
+entity_type: paragraph
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

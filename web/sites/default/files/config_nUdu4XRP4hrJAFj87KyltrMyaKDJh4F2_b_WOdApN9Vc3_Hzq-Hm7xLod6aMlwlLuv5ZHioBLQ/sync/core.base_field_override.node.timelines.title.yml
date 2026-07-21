@@ -1,0 +1,18 @@
+uuid: a62cd14b-4038-41e8-822f-6746fc2ccf9f
+langcode: es
+status: true
+dependencies:
+  config:
+    - node.type.timelines
+id: node.timelines.title
+field_name: title
+entity_type: node
+bundle: timelines
+label: Nombre
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

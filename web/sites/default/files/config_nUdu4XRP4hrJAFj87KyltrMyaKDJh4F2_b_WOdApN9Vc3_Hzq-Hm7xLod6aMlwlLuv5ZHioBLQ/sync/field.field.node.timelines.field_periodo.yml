@@ -1,0 +1,19 @@
+uuid: a3efc5ed-63c5-4a9c-afcc-c2cb43233d31
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_periodo
+    - node.type.timelines
+id: node.timelines.field_periodo
+field_name: field_periodo
+entity_type: node
+bundle: timelines
+label: Periodo
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

@@ -1,0 +1,23 @@
+uuid: 024149f9-4d88-4682-a448-da5cbe1280ab
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_visualizaciones
+    - node.type.news
+id: node.news.field_visualizaciones
+field_name: field_visualizaciones
+entity_type: node
+bundle: news
+label: Visualizaciones
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

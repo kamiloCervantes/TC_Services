@@ -1,0 +1,18 @@
+uuid: add87111-ad2b-4616-ae3c-968e9211158f
+langcode: es
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.field_fecha_creado
+field_name: field_fecha_creado
+entity_type: paragraph
+type: timestamp
+settings: {  }
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

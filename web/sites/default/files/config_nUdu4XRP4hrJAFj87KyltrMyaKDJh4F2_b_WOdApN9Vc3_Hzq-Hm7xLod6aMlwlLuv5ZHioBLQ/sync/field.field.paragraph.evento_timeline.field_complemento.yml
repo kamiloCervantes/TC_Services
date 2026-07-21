@@ -1,0 +1,19 @@
+uuid: 16938c12-9891-441a-8315-bba5d4a2db6f
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_complemento
+    - paragraphs.paragraphs_type.evento_timeline
+id: paragraph.evento_timeline.field_complemento
+field_name: field_complemento
+entity_type: paragraph
+bundle: evento_timeline
+label: Complemento
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

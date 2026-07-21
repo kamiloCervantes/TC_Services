@@ -1,0 +1,19 @@
+uuid: 46f3745a-9cca-40b1-ba6c-f5cd24ca6d0b
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_color
+    - node.type.timelines
+id: node.timelines.field_color
+field_name: field_color
+entity_type: node
+bundle: timelines
+label: Color
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

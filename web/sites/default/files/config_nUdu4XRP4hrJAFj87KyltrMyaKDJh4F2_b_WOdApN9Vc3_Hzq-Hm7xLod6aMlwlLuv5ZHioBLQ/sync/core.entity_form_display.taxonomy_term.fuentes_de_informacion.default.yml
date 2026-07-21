@@ -1,0 +1,60 @@
+uuid: 920f9768-d173-4653-9e6a-9d37efff0d54
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.fuentes_de_informacion.field_url
+    - taxonomy.vocabulary.fuentes_de_informacion
+  module:
+    - path
+    - text
+id: taxonomy_term.fuentes_de_informacion.default
+targetEntityType: taxonomy_term
+bundle: fuentes_de_informacion
+mode: default
+content:
+  description:
+    type: text_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_url:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  langcode:
+    type: language_select
+    weight: 3
+    region: content
+    settings:
+      include_locked: true
+    third_party_settings: {  }
+  name:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  path:
+    type: path
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  status:
+    type: boolean_checkbox
+    weight: 5
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+hidden: {  }

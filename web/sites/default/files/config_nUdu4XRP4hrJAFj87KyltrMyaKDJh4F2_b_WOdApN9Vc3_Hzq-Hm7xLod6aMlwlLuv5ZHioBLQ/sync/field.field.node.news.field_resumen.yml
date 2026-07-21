@@ -1,0 +1,19 @@
+uuid: e1f2e8f2-91f4-404c-8940-c3a11af3ed01
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_resumen
+    - node.type.news
+id: node.news.field_resumen
+field_name: field_resumen
+entity_type: node
+bundle: news
+label: Resumen
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

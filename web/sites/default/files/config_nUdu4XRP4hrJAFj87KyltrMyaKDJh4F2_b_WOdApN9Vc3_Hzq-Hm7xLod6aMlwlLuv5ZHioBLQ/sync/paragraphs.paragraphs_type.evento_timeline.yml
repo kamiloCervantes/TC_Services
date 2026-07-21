@@ -1,0 +1,10 @@
+uuid: f5881c04-c26c-4f9c-aa68-60700f024a11
+langcode: es
+status: true
+dependencies: {  }
+id: evento_timeline
+label: 'Evento timeline'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

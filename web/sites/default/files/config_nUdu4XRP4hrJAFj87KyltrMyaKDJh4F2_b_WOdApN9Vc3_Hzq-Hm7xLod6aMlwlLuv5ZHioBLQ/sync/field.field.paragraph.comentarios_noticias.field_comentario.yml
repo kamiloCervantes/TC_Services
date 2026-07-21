@@ -1,0 +1,19 @@
+uuid: 5c98979e-814e-4728-8bac-cf60a261c963
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_comentario
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.field_comentario
+field_name: field_comentario
+entity_type: paragraph
+bundle: comentarios_noticias
+label: Comentario
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,24 @@
+uuid: 10eb7cc9-80aa-4129-8a41-ac09916b5318
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_fecha_fin
+    - node.type.sponsored_posts
+  module:
+    - datetime
+id: node.sponsored_posts.field_fecha_fin
+field_name: field_fecha_fin
+entity_type: node
+bundle: sponsored_posts
+label: 'Fecha fin'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    default_date_type: relative
+    default_date: '+30 days'
+default_value_callback: ''
+settings: {  }
+field_type: datetime

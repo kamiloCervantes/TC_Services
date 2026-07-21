@@ -1,0 +1,65 @@
+uuid: e860aedc-24e8-4d29-a428-74ae7c3a8b3b
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.comentarios_noticias.field_comentario
+    - field.field.paragraph.comentarios_noticias.field_email
+    - field.field.paragraph.comentarios_noticias.field_fecha_creado
+    - field.field.paragraph.comentarios_noticias.field_likes
+    - field.field.paragraph.comentarios_noticias.field_nombre_completo
+    - field.field.paragraph.comentarios_noticias.field_telefono
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.default
+targetEntityType: paragraph
+bundle: comentarios_noticias
+mode: default
+content:
+  field_comentario:
+    type: string_textarea
+    weight: 3
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_email:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_fecha_creado:
+    type: datetime_timestamp
+    weight: 4
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_likes:
+    type: number
+    weight: 5
+    region: content
+    settings:
+      placeholder: ''
+    third_party_settings: {  }
+  field_nombre_completo:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_telefono:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

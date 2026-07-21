@@ -1,0 +1,24 @@
+uuid: 1a3c0d71-5680-440c-bc2d-7bd9ed96dceb
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_fecha_inicio
+    - node.type.sponsored_posts
+  module:
+    - datetime
+id: node.sponsored_posts.field_fecha_inicio
+field_name: field_fecha_inicio
+entity_type: node
+bundle: sponsored_posts
+label: 'Fecha inicio'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    default_date_type: now
+    default_date: now
+default_value_callback: ''
+settings: {  }
+field_type: datetime

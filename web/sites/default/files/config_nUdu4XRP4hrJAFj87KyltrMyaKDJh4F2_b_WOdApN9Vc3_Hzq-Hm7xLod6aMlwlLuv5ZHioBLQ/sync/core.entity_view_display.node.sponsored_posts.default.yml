@@ -1,0 +1,142 @@
+uuid: 15d3cc8b-15e6-41c0-8fb3-7def2a8dabe7
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.node.sponsored_posts.field_altura
+    - field.field.node.sponsored_posts.field_avatar_sponsor
+    - field.field.node.sponsored_posts.field_fecha_fin
+    - field.field.node.sponsored_posts.field_fecha_inicio
+    - field.field.node.sponsored_posts.field_imagen
+    - field.field.node.sponsored_posts.field_nombre_sponsor
+    - field.field.node.sponsored_posts.field_posicion
+    - field.field.node.sponsored_posts.field_resumen
+    - field.field.node.sponsored_posts.field_texto_cta
+    - field.field.node.sponsored_posts.field_url_cta
+    - field.field.node.sponsored_posts.field_variante
+    - field.field.node.sponsored_posts.field_visible
+    - node.type.sponsored_posts
+  module:
+    - datetime
+    - image
+    - user
+id: node.sponsored_posts.default
+targetEntityType: node
+bundle: sponsored_posts
+mode: default
+content:
+  field_altura:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_avatar_sponsor:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 106
+    region: content
+  field_fecha_fin:
+    type: datetime_default
+    label: above
+    settings:
+      timezone_override: ''
+      format_type: medium
+    third_party_settings: {  }
+    weight: 110
+    region: content
+  field_fecha_inicio:
+    type: datetime_default
+    label: above
+    settings:
+      timezone_override: ''
+      format_type: medium
+    third_party_settings: {  }
+    weight: 109
+    region: content
+  field_imagen:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_nombre_sponsor:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 105
+    region: content
+  field_posicion:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  field_resumen:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_texto_cta:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 107
+    region: content
+  field_url_cta:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 108
+    region: content
+  field_variante:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 102
+    region: content
+  field_visible:
+    type: boolean
+    label: above
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+    weight: 111
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  langcode: true

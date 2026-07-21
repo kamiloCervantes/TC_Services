@@ -1,0 +1,23 @@
+uuid: ba70a71b-46a7-4ef3-b0ae-16116ae76092
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_likes
+    - node.type.news
+id: node.news.field_likes
+field_name: field_likes
+entity_type: node
+bundle: news
+label: Likes
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

@@ -1,0 +1,18 @@
+uuid: d279c012-b2bc-43a4-b349-e672fdafbd56
+langcode: es
+status: true
+dependencies:
+  module:
+    - serialization
+    - tc_api_v1
+    - user
+id: tc_api_v1_timelines
+plugin_id: tc_api_v1_timelines
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - cookie

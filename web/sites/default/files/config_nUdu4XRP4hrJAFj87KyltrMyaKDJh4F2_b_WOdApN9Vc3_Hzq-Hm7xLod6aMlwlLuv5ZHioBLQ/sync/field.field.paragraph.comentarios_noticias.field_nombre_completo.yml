@@ -1,0 +1,19 @@
+uuid: cca26e58-23c0-4e73-b0a6-bfa8f0b14cf4
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_nombre_completo
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.field_nombre_completo
+field_name: field_nombre_completo
+entity_type: paragraph
+bundle: comentarios_noticias
+label: 'Nombre completo'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

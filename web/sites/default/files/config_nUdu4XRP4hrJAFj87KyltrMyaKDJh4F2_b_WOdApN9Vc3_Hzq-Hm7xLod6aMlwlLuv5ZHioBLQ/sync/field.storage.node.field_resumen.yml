@@ -1,0 +1,19 @@
+uuid: 99045e97-bc8c-49f6-9e6f-3b816597ff53
+langcode: es
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_resumen
+field_name: field_resumen
+entity_type: node
+type: string_long
+settings:
+  case_sensitive: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

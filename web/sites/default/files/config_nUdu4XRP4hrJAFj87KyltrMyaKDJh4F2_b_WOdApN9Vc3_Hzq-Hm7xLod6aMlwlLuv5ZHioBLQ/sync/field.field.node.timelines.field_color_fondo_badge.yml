@@ -1,0 +1,19 @@
+uuid: 87f73834-66c8-478b-8c56-4afa2a37e3ef
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_color_fondo_badge
+    - node.type.timelines
+id: node.timelines.field_color_fondo_badge
+field_name: field_color_fondo_badge
+entity_type: node
+bundle: timelines
+label: 'Color fondo badge'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

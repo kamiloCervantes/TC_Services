@@ -1,0 +1,21 @@
+uuid: 4ce65686-4772-4488-85ae-c34cb286fab9
+langcode: es
+status: true
+dependencies:
+  module:
+    - user
+id: user.field_nombre_completo
+field_name: field_nombre_completo
+entity_type: user
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

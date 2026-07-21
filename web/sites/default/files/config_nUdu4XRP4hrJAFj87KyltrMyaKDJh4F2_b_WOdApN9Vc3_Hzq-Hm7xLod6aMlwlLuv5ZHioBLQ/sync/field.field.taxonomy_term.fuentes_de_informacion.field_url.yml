@@ -1,0 +1,19 @@
+uuid: 814bf9a4-4873-47ac-b9e5-5fa20abf9a50
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_url
+    - taxonomy.vocabulary.fuentes_de_informacion
+id: taxonomy_term.fuentes_de_informacion.field_url
+field_name: field_url
+entity_type: taxonomy_term
+bundle: fuentes_de_informacion
+label: URL
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

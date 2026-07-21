@@ -1,0 +1,21 @@
+uuid: 6d55e5b3-8063-493a-818a-deff961daf0b
+langcode: es
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_color_fondo_badge
+field_name: field_color_fondo_badge
+entity_type: node
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

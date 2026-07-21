@@ -1,0 +1,11 @@
+uuid: 877a0a3f-7767-412b-8447-552fb20dccc7
+langcode: es
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.fuentes_de_informacion
+id: taxonomy_term.fuentes_de_informacion
+target_entity_type_id: taxonomy_term
+target_bundle: fuentes_de_informacion
+default_langcode: site_default
+language_alterable: false

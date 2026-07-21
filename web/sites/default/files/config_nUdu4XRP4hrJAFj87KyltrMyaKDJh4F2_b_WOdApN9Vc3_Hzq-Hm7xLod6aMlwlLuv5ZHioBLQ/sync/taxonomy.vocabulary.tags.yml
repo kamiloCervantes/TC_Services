@@ -1,0 +1,11 @@
+uuid: 27e351e6-3249-4a42-a3d0-89ace24dab5c
+langcode: es
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: PWTsHiwkIfp5TW-iTBc9AhBtvbYY6wrp3MopazQ-95o
+name: Etiquetas
+vid: tags
+description: 'Use tags to group content on similar topics into categories.'
+weight: 0
+new_revision: false

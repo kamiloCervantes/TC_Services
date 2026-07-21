@@ -1,0 +1,23 @@
+uuid: 4d347093-3dfd-47b7-b748-1f371885e010
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_likes
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.field_likes
+field_name: field_likes
+entity_type: paragraph
+bundle: comentarios_noticias
+label: Likes
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

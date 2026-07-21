@@ -1,0 +1,19 @@
+uuid: 1b1f768f-9c4e-4808-ae30-d56f539d06a8
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_resumen
+    - node.type.sponsored_posts
+id: node.sponsored_posts.field_resumen
+field_name: field_resumen
+entity_type: node
+bundle: sponsored_posts
+label: Resumen
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

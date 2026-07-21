@@ -1,0 +1,29 @@
+uuid: 984db39e-fb93-41a8-91cf-8e17b81243db
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_variante
+    - node.type.sponsored_posts
+    - taxonomy.vocabulary.variantes_sponsored_posts
+id: node.sponsored_posts.field_variante
+field_name: field_variante
+entity_type: node
+bundle: sponsored_posts
+label: Variante
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      variantes_sponsored_posts: variantes_sponsored_posts
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

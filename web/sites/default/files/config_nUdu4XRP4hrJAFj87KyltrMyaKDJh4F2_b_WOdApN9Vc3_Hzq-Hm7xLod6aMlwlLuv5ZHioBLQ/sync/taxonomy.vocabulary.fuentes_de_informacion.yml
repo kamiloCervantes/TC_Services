@@ -1,0 +1,9 @@
+uuid: faf10db9-ed3a-47c2-81a3-92c25e33e43a
+langcode: es
+status: true
+dependencies: {  }
+name: 'Fuentes de informacion'
+vid: fuentes_de_informacion
+description: null
+weight: 0
+new_revision: false

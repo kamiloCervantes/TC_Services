@@ -1,0 +1,31 @@
+uuid: e3ee9c72-e97f-4cb5-bbb2-a1e30c2cd5b4
+langcode: es
+status: true
+dependencies:
+  config:
+    - filter.format.restricted_html
+    - rest.resource.tc_api_v1_articles
+    - rest.resource.tc_api_v1_boards
+    - rest.resource.tc_api_v1_comments
+    - rest.resource.tc_api_v1_feed
+    - rest.resource.tc_api_v1_sponsored
+    - rest.resource.tc_api_v1_timelines
+  module:
+    - filter
+    - rest
+    - system
+_core:
+  default_config_hash: Tus1ZTNXKIOnrennR1hnTbc7wUPBXHTUm5UdCpEhJSk
+id: anonymous
+label: 'Usuario anónimo'
+weight: 0
+is_admin: false
+permissions:
+  - 'access content'
+  - 'restful get tc_api_v1_articles'
+  - 'restful get tc_api_v1_boards'
+  - 'restful get tc_api_v1_comments'
+  - 'restful get tc_api_v1_feed'
+  - 'restful get tc_api_v1_sponsored'
+  - 'restful get tc_api_v1_timelines'
+  - 'use text format restricted_html'

@@ -1,0 +1,19 @@
+uuid: f4a2cb52-565f-4913-8494-0213e51257b8
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_fecha
+    - paragraphs.paragraphs_type.evento_timeline
+id: paragraph.evento_timeline.field_fecha
+field_name: field_fecha
+entity_type: paragraph
+bundle: evento_timeline
+label: Fecha
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

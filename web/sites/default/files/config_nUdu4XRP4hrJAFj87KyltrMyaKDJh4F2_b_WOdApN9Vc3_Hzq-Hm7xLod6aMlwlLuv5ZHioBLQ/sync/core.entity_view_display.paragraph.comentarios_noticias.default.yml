@@ -1,0 +1,80 @@
+uuid: a6073ec5-bfd1-43bd-90f7-bfec7c514a74
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.comentarios_noticias.field_comentario
+    - field.field.paragraph.comentarios_noticias.field_email
+    - field.field.paragraph.comentarios_noticias.field_fecha_creado
+    - field.field.paragraph.comentarios_noticias.field_likes
+    - field.field.paragraph.comentarios_noticias.field_nombre_completo
+    - field.field.paragraph.comentarios_noticias.field_telefono
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.default
+targetEntityType: paragraph
+bundle: comentarios_noticias
+mode: default
+content:
+  field_comentario:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_email:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_fecha_creado:
+    type: timestamp
+    label: above
+    settings:
+      date_format: medium
+      custom_date_format: ''
+      timezone: ''
+      tooltip:
+        date_format: long
+        custom_date_format: ''
+      time_diff:
+        enabled: false
+        future_format: '@interval hence'
+        past_format: '@interval ago'
+        granularity: 2
+        refresh: 60
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_likes:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 5
+    region: content
+  field_nombre_completo:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_telefono:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden: {  }

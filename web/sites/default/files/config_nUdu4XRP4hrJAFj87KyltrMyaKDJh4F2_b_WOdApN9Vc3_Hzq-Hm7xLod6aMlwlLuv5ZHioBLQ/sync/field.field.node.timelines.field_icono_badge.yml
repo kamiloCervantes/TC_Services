@@ -1,0 +1,19 @@
+uuid: d2e4fb90-8054-4353-82db-20a6b7831b91
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_icono_badge
+    - node.type.timelines
+id: node.timelines.field_icono_badge
+field_name: field_icono_badge
+entity_type: node
+bundle: timelines
+label: 'Icono badge'
+description: 'Emoji en formato unicode'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

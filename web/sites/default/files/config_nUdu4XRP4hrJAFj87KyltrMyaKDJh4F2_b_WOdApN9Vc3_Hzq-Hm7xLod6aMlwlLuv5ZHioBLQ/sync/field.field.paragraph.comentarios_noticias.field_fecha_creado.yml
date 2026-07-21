@@ -1,0 +1,19 @@
+uuid: 3a05d7c2-2aec-4ccb-8080-a0c259224fd0
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_fecha_creado
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.field_fecha_creado
+field_name: field_fecha_creado
+entity_type: paragraph
+bundle: comentarios_noticias
+label: 'Fecha creado'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: timestamp

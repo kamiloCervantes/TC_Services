@@ -1,0 +1,71 @@
+uuid: 1e23c8d6-2356-465f-bb19-2c2d19bbedb5
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.node.timelines.field_color
+    - field.field.node.timelines.field_color_fondo_badge
+    - field.field.node.timelines.field_eventos
+    - field.field.node.timelines.field_icono_badge
+    - field.field.node.timelines.field_periodo
+    - node.type.timelines
+  module:
+    - entity_reference_revisions
+    - user
+id: node.timelines.default
+targetEntityType: node
+bundle: timelines
+mode: default
+content:
+  field_color:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 102
+    region: content
+  field_color_fondo_badge:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_eventos:
+    type: entity_reference_revisions_entity_view
+    label: above
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 105
+    region: content
+  field_icono_badge:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_periodo:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  langcode: true

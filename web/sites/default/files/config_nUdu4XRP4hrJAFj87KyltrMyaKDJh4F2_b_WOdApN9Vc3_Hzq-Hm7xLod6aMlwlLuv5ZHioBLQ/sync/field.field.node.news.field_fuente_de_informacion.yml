@@ -1,0 +1,29 @@
+uuid: 6a84888b-5066-4bb6-9ec5-85ebe46f1fbf
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_fuente_de_informacion
+    - node.type.news
+    - taxonomy.vocabulary.fuentes_de_informacion
+id: node.news.field_fuente_de_informacion
+field_name: field_fuente_de_informacion
+entity_type: node
+bundle: news
+label: 'Fuente de información'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      fuentes_de_informacion: fuentes_de_informacion
+    sort:
+      field: name
+      direction: asc
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

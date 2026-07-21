@@ -1,0 +1,21 @@
+uuid: e625c83d-2023-417f-8e54-0e2f8881ec66
+langcode: es
+status: true
+dependencies:
+  module:
+    - paragraphs
+id: paragraph.field_fecha
+field_name: field_fecha
+entity_type: paragraph
+type: string
+settings:
+  max_length: 255
+  case_sensitive: false
+  is_ascii: false
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

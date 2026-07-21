@@ -1,0 +1,19 @@
+uuid: 3e32f41b-6732-41ff-90ef-f82a7a0ebd6c
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_url_cta
+    - node.type.sponsored_posts
+id: node.sponsored_posts.field_url_cta
+field_name: field_url_cta
+entity_type: node
+bundle: sponsored_posts
+label: 'Url CTA'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

@@ -1,0 +1,21 @@
+uuid: 562bd856-fd12-4973-bab4-a3ec54918684
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_visible
+    - node.type.sponsored_posts
+id: node.sponsored_posts.field_visible
+field_name: field_visible
+entity_type: node
+bundle: sponsored_posts
+label: Visible
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: Activado
+  off_label: Desactivado
+field_type: boolean

@@ -1,0 +1,42 @@
+uuid: 2ecee03c-4d71-4677-aa6f-11dc0e81bcc8
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.categorias_noticias.field_color
+    - field.field.taxonomy_term.categorias_noticias.field_icono
+    - taxonomy.vocabulary.categorias_noticias
+  module:
+    - text
+id: taxonomy_term.categorias_noticias.default
+targetEntityType: taxonomy_term
+bundle: categorias_noticias
+mode: default
+content:
+  description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_color:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_icono:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  langcode: true

@@ -1,0 +1,119 @@
+uuid: 7d45e363-a121-45da-a38f-0eeeb182635a
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.node.news.field_categoria
+    - field.field.node.news.field_comentarios
+    - field.field.node.news.field_contenido
+    - field.field.node.news.field_credito_imagen_destacada
+    - field.field.node.news.field_fuente_de_informacion
+    - field.field.node.news.field_imagen_destacada
+    - field.field.node.news.field_likes
+    - field.field.node.news.field_radicado_en
+    - field.field.node.news.field_resumen
+    - field.field.node.news.field_visualizaciones
+    - node.type.news
+  module:
+    - entity_reference_revisions
+    - image
+    - text
+    - user
+id: node.news.default
+targetEntityType: node
+bundle: news
+mode: default
+content:
+  field_categoria:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  field_comentarios:
+    type: entity_reference_revisions_entity_view
+    label: above
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 107
+    region: content
+  field_contenido:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_credito_imagen_destacada:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 109
+    region: content
+  field_fuente_de_informacion:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 110
+    region: content
+  field_imagen_destacada:
+    type: image
+    label: above
+    settings:
+      image_link: ''
+      image_style: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 108
+    region: content
+  field_likes:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 105
+    region: content
+  field_radicado_en:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 102
+    region: content
+  field_resumen:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_visualizaciones:
+    type: number_integer
+    label: above
+    settings:
+      thousand_separator: ''
+      prefix_suffix: true
+    third_party_settings: {  }
+    weight: 106
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  langcode: true

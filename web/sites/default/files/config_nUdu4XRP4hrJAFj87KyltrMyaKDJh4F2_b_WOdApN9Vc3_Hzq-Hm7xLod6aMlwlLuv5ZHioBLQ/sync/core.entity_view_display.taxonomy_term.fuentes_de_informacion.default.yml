@@ -1,0 +1,32 @@
+uuid: 4555f57c-7b78-4196-aeb4-3534c4d9a29e
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.fuentes_de_informacion.field_url
+    - taxonomy.vocabulary.fuentes_de_informacion
+  module:
+    - text
+id: taxonomy_term.fuentes_de_informacion.default
+targetEntityType: taxonomy_term
+bundle: fuentes_de_informacion
+mode: default
+content:
+  description:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_url:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden:
+  langcode: true

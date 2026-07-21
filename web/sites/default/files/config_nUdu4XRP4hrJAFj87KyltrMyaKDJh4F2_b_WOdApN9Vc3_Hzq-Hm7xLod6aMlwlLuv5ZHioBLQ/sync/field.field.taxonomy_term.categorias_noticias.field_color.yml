@@ -1,0 +1,19 @@
+uuid: eee6da33-48f7-44b5-b787-496a758c9773
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_color
+    - taxonomy.vocabulary.categorias_noticias
+id: taxonomy_term.categorias_noticias.field_color
+field_name: field_color
+entity_type: taxonomy_term
+bundle: categorias_noticias
+label: Color
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

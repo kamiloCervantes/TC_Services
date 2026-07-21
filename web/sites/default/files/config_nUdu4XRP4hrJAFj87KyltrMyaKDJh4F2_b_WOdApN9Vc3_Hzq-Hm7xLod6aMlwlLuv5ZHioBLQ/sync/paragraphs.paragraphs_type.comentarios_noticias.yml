@@ -1,0 +1,10 @@
+uuid: c9ceb97b-5dc1-4cc2-907c-f17ba0199c86
+langcode: es
+status: true
+dependencies: {  }
+id: comentarios_noticias
+label: 'Comentarios noticias'
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

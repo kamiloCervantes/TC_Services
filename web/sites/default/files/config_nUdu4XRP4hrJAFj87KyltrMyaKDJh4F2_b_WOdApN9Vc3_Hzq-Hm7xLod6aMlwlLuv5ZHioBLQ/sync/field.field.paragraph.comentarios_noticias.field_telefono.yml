@@ -1,0 +1,19 @@
+uuid: 0202753c-538a-47e9-aa3b-558badd67e15
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_telefono
+    - paragraphs.paragraphs_type.comentarios_noticias
+id: paragraph.comentarios_noticias.field_telefono
+field_name: field_telefono
+entity_type: paragraph
+bundle: comentarios_noticias
+label: Teléfono
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

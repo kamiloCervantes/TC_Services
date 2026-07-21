@@ -1,0 +1,31 @@
+uuid: 8bff4d4c-455c-40dd-b6c8-46131e8d21ee
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_comentarios
+    - node.type.news
+    - paragraphs.paragraphs_type.comentarios_noticias
+  module:
+    - entity_reference_revisions
+id: node.news.field_comentarios
+field_name: field_comentarios
+entity_type: node
+bundle: news
+label: Comentarios
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    target_bundles:
+      comentarios_noticias: comentarios_noticias
+    negate: 0
+    target_bundles_drag_drop:
+      comentarios_noticias:
+        weight: 2
+        enabled: true
+field_type: entity_reference_revisions

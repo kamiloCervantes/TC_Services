@@ -1,0 +1,23 @@
+uuid: 9909baa9-09bf-46d4-993a-df9bc94f04fa
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_posicion
+    - node.type.sponsored_posts
+id: node.sponsored_posts.field_posicion
+field_name: field_posicion
+entity_type: node
+bundle: sponsored_posts
+label: Posición
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

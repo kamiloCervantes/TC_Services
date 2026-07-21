@@ -1,0 +1,17 @@
+uuid: cce40041-d771-4645-9fc4-7a3de582c08b
+langcode: es
+status: true
+dependencies:
+  module:
+    - serialization
+    - tc_api_v1
+    - user
+id: tc_api_v1_articles
+plugin_id: tc_api_v1_articles
+granularity: method
+configuration:
+  GET:
+    supported_formats:
+      - json
+    supported_auth:
+      - cookie

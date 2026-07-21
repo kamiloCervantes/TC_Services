@@ -1,0 +1,29 @@
+uuid: f98a6020-cf68-4a0f-9bc6-aeda6c3d70a9
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_noticia
+    - node.type.news
+    - paragraphs.paragraphs_type.evento_timeline
+id: paragraph.evento_timeline.field_noticia
+field_name: field_noticia
+entity_type: paragraph
+bundle: evento_timeline
+label: Noticia
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      news: news
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

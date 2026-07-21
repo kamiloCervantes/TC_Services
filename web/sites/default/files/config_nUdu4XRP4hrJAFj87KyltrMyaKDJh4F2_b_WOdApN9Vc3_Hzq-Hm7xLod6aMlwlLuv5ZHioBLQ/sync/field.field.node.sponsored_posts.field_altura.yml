@@ -1,0 +1,23 @@
+uuid: 1d95ca91-3b65-437a-a72d-004133092e99
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_altura
+    - node.type.sponsored_posts
+id: node.sponsored_posts.field_altura
+field_name: field_altura
+entity_type: node
+bundle: sponsored_posts
+label: Altura
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: null
+  max: null
+  prefix: ''
+  suffix: ''
+field_type: integer

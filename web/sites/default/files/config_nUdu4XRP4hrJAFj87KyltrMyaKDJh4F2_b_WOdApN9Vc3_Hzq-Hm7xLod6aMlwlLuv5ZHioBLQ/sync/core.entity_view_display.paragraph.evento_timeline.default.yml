@@ -1,0 +1,57 @@
+uuid: 1d482dcd-5df9-417d-aea0-0a826d127e63
+langcode: es
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.evento_timeline.field_complemento
+    - field.field.paragraph.evento_timeline.field_descripcion
+    - field.field.paragraph.evento_timeline.field_fecha
+    - field.field.paragraph.evento_timeline.field_noticia
+    - field.field.paragraph.evento_timeline.field_titulo
+    - paragraphs.paragraphs_type.evento_timeline
+id: paragraph.evento_timeline.default
+targetEntityType: paragraph
+bundle: evento_timeline
+mode: default
+content:
+  field_complemento:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_descripcion:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_fecha:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_noticia:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 4
+    region: content
+  field_titulo:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+      link_rel: canonical
+    third_party_settings: {  }
+    weight: 1
+    region: content
+hidden: {  }

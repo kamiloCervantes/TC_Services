@@ -1,0 +1,11 @@
+uuid: 255fb368-8b66-40f2-b366-feee0beb828b
+langcode: es
+status: true
+dependencies:
+  config:
+    - node.type.timelines
+id: node.timelines
+target_entity_type_id: node
+target_bundle: timelines
+default_langcode: site_default
+language_alterable: false

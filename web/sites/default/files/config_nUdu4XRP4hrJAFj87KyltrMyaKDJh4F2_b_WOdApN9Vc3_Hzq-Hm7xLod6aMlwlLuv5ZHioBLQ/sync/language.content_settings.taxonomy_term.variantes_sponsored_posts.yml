@@ -1,0 +1,11 @@
+uuid: f0f80b88-2992-4e34-9def-b750a0bf9db2
+langcode: es
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.variantes_sponsored_posts
+id: taxonomy_term.variantes_sponsored_posts
+target_entity_type_id: taxonomy_term
+target_bundle: variantes_sponsored_posts
+default_langcode: site_default
+language_alterable: false

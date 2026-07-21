@@ -1,0 +1,18 @@
+uuid: 1fd15430-ed5e-4f8a-9b9a-a4350f98630b
+langcode: es
+status: true
+dependencies:
+  module:
+    - serialization
+    - tc_api_v1
+    - user
+id: tc_api_v1_boards
+plugin_id: tc_api_v1_boards
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - cookie

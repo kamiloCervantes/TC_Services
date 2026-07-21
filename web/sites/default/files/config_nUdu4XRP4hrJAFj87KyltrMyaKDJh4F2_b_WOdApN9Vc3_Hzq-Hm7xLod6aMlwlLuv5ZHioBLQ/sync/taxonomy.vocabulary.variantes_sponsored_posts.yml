@@ -1,0 +1,9 @@
+uuid: aa59c062-d11c-4e5e-9201-4c6e9230bc7f
+langcode: es
+status: true
+dependencies: {  }
+name: 'Variantes Sponsored Posts'
+vid: variantes_sponsored_posts
+description: null
+weight: 0
+new_revision: false
