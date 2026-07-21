@@ -49,11 +49,12 @@ class SyncNewsForm extends FormBase
     $batch = [
       'title' => $this->t('Sincronizando noticias...'),
       'operations' => [
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchMonteriaOperation', []],
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUrraOperation', []],
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUnicordobaOperation', []],
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCordobaGobOperation', []],
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchEpmOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchMonteriaOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUrraOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUnicordobaOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCordobaGobOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchEpmOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCorantioquiaOperation', []],
       ],
       'finished' => '\Drupal\tc_news_sync\Form\SyncNewsForm::batchFinished',
     ];
@@ -313,6 +314,10 @@ class SyncNewsForm extends FormBase
         return;
       }
 
+      // Invertir el orden para procesar primero la noticia más antigua,
+      // de modo que la más reciente quede con la fecha de creación más alta.
+      $items = array_reverse($items);
+
       $context['sandbox']['items'] = $items;
       $context['sandbox']['max'] = count($items);
       $context['sandbox']['progress'] = 0;
@@ -333,6 +338,67 @@ class SyncNewsForm extends FormBase
 
       $context['message'] = 'Procesando noticia EPM: ' . $item['title'];
       $result = $sync_service->processEpmNewsItem($item);
+
+      if ($result === TRUE) {
+        $context['results']['created']++;
+      } elseif ($result === 'exists') {
+        $context['results']['exists']++;
+      } else {
+        $context['results']['errors']++;
+      }
+
+      $context['sandbox']['progress']++;
+      $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+    }
+  }
+
+  /**
+   * Batch operation: Fetches the list for Corantioquia and queues the processing.
+   */
+  public static function fetchCorantioquiaOperation(&$context)
+  {
+    if (empty($context['sandbox'])) {
+      $context['message'] = 'Obteniendo listado de noticias desde el portal de Corantioquia...';
+
+      /** @var \Drupal\tc_news_sync\Service\SyncService $sync_service */
+      $sync_service = \Drupal::service('tc_news_sync.sync_service');
+
+      $items = $sync_service->getCorantioquiaNewsList();
+
+      if (!empty($items)) {
+        $items = array_reverse($items);
+      }
+
+      if (empty($items)) {
+        $context['finished'] = 1;
+        if (!isset($context['results']['created'])) {
+          $context['results']['created'] = 0;
+          $context['results']['exists'] = 0;
+          $context['results']['errors'] = 0;
+        }
+        return;
+      }
+
+      $context['sandbox']['items'] = $items;
+      $context['sandbox']['max'] = count($items);
+      $context['sandbox']['progress'] = 0;
+
+      if (!isset($context['results']['created'])) {
+        $context['results']['created'] = 0;
+        $context['results']['exists'] = 0;
+        $context['results']['errors'] = 0;
+      }
+    }
+
+    $items = &$context['sandbox']['items'];
+    if (!empty($items)) {
+      $item = array_shift($items);
+
+      /** @var \Drupal\tc_news_sync\Service\SyncService $sync_service */
+      $sync_service = \Drupal::service('tc_news_sync.sync_service');
+
+      $context['message'] = 'Procesando noticia Corantioquia: ' . $item['title'];
+      $result = $sync_service->processCorantioquiaNewsItem($item);
 
       if ($result === TRUE) {
         $context['results']['created']++;

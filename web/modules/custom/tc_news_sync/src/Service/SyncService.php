@@ -257,6 +257,11 @@ class SyncService
         ];
       }
 
+      $term_id = $this->getTaxonomyTermIdByName('Alcaldía de Montería');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
+      }
+
       $node = $node_storage->create($node_data);
       $node->save();
 
@@ -464,6 +469,11 @@ class SyncService
         $node_data['field_radicado_en'] = ['value' => $radicado_en];
       }
 
+      $term_id = $this->getTaxonomyTermIdByName('Gobernación de Córdoba');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
+      }
+
       $node = $node_storage->create($node_data);
       $node->save();
 
@@ -658,6 +668,11 @@ class SyncService
 
       if (!empty($radicado_en)) {
         $node_data['field_radicado_en'] = ['value' => $radicado_en];
+      }
+
+      $term_id = $this->getTaxonomyTermIdByName('Urrá');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
       }
 
       $node = $node_storage->create($node_data);
@@ -924,6 +939,11 @@ class SyncService
         $node_data['field_radicado_en'] = ['value' => $radicado_en];
       }
 
+      $term_id = $this->getTaxonomyTermIdByName('Unicordoba');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
+      }
+
       $node = $node_storage->create($node_data);
       $node->save();
 
@@ -970,7 +990,16 @@ class SyncService
       @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
       $xpath = new \DOMXPath($dom);
 
-      $nodes = $xpath->query('//*[@id="news-institucional"]//article[@data-cmp-contentfragment-model="epm/models/noticias"]');
+      // Buscar artículos EPM en la página de listado.
+      // El contenedor puede estar dentro de un wrapper de listado o directamente
+      // como articles con el modelo de noticias.
+      $nodes = $xpath->query('//article[@data-cmp-contentfragment-model="epm/models/noticias"]');
+
+      // Fallback: buscar dentro del contenedor principal de noticias
+      if ($nodes->length === 0) {
+        $nodes = $xpath->query('//*[@id="news-institucional"]//article[@data-cmp-contentfragment-model="epm/models/noticias"]');
+      }
+
       $this->logger->info('EPM Sync: Nodos de noticias encontrados: @count', ['@count' => $nodes->length]);
 
       $limit = 18; // Páginas 1, 2 y 3 (a 6 ítems por página)
@@ -980,17 +1009,33 @@ class SyncService
         if ($count >= $limit) {
           break;
         }
-        $titleNode = $xpath->query('.//h3[contains(@class, "cmp-contentfragment__title")]', $node)->item(0);
-        $linkNode = $xpath->query('.//a[contains(@class, "cmp-contentfragment-pageredirect")]', $node)->item(0);
 
-        if (!$titleNode || !$linkNode) {
+        // Título: h3.cmp-contentfragment__title dentro del article
+        $titleNode = $xpath->query('.//h3[contains(@class, "cmp-contentfragment__title")]', $node)->item(0);
+
+        // URL de detalle: atributo data-cmp-contentfragment-path del article (ruta interna)
+        // o en el enlace de redireccionamiento si existe
+        $detail_url = '';
+        $linkNode = $xpath->query('.//a[contains(@class, "cmp-contentfragment-pageredirect")]', $node)->item(0);
+        if ($linkNode) {
+          $detail_url = $linkNode->getAttribute('href');
+        } else {
+          // Intentar construir URL desde el atributo data-cmp-contentfragment-path
+          // Ejemplo: /content/dam/epm/.../slug => URL pública no mapeada directamente,
+          // por lo que se busca cualquier <a> dentro del article
+          $anyLink = $xpath->query('.//a[@href]', $node)->item(0);
+          if ($anyLink) {
+            $detail_url = $anyLink->getAttribute('href');
+          }
+        }
+
+        if (!$titleNode) {
           continue;
         }
 
         $title = trim($titleNode->textContent);
-        $detail_url = $linkNode->getAttribute('href');
 
-        if (strpos($detail_url, 'http') !== 0) {
+        if (strpos($detail_url, 'http') !== 0 && !empty($detail_url)) {
           $detail_url = 'https://www.epm.com.co' . $detail_url;
         }
 
@@ -1047,63 +1092,284 @@ class SyncService
       @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
       $xpath = new \DOMXPath($dom);
 
-      $contentNodes = $xpath->query('//div[contains(@class, "cmp-text")]');
+      // El contenido de la noticia EPM reside en el article con el modelo AEM.
+      // Estrategia primaria: leer el atributo data-cmp-data-layer del article,
+      // que contiene JSON con el HTML completo y no sufre truncamiento por
+      // renderizado parcial del CMS.
+      $articleNode = $xpath->query('//article[@data-cmp-contentfragment-model="epm/models/noticias"]')->item(0);
 
       $content_html = '';
-      if ($contentNodes->length > 0) {
-        $this->logger->info('EPM Sync: Contenido encontrado mediante .cmp-text');
-        foreach ($contentNodes as $contentNode) {
-          $content_html .= $dom->saveHTML($contentNode);
+      $alt_imagen = 'Foto EPM';
+      $img_url = '';
+      $radicado_en = '';
+
+      if ($articleNode) {
+        $this->logger->info('EPM Sync: Article de noticia encontrado en la página de detalle.');
+
+        $dataLayer = $articleNode->getAttribute('data-cmp-data-layer');
+        $extractedFromJson = false;
+
+        if (!empty($dataLayer)) {
+          // El atributo está HTML-encoded; html_entity_decode lo convierte a JSON válido.
+          $dataLayerJson = html_entity_decode($dataLayer, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+          $dataLayerObj = json_decode($dataLayerJson, TRUE);
+
+          if (json_last_error() === JSON_ERROR_NONE && is_array($dataLayerObj)) {
+            // La clave raíz es dinámica (ID del componente), tomamos el primer valor.
+            $fragmentData = reset($dataLayerObj);
+            $elements = $fragmentData['elements'] ?? [];
+
+            $rawContentHtml = '';
+            $rawAltImagen = '';
+
+            foreach ($elements as $element) {
+              $title = $element['xdm:title'] ?? '';
+              $text  = $element['xdm:text']  ?? '';
+              if ($title === 'Contenido') {
+                $rawContentHtml = $text;
+              } elseif ($title === 'Alt imagen') {
+                $rawAltImagen = $text;
+              }
+            }
+
+            if (!empty($rawContentHtml)) {
+              $this->logger->info('EPM Sync: Contenido extraído desde data-cmp-data-layer (JSON completo).');
+
+              if (!empty($rawAltImagen)) {
+                $alt_imagen = trim($rawAltImagen);
+              }
+
+              // Parsear el HTML extraído del JSON para limpiar nodos no deseados.
+              $contentDom = new \DOMDocument();
+              @$contentDom->loadHTML(
+                '<meta charset="UTF-8">' .
+                mb_convert_encoding($rawContentHtml, 'HTML-ENTITIES', 'UTF-8')
+              );
+              $contentXpath = new \DOMXPath($contentDom);
+
+              // Seleccionar el body como contexto de trabajo.
+              $bodyNode = $contentXpath->query('//body')->item(0);
+              if (!$bodyNode) {
+                $bodyNode = $contentDom->documentElement;
+              }
+
+              // 1. Eliminar el primer <p> con imagen de portada.
+              $firstImgP = $contentXpath->query('.//p[.//img]', $bodyNode)->item(0);
+              if ($firstImgP) {
+                // Guardar src de la imagen antes de eliminarla.
+                $imgTag = $contentXpath->query('.//img', $firstImgP)->item(0);
+                if ($imgTag) {
+                  $img_url = $imgTag->getAttribute('src');
+                }
+                $firstImgP->parentNode->removeChild($firstImgP);
+              }
+
+              // 2. Extraer ciudad y limpiar el prefijo de cabecera EPM del primer <p> que lo contenga.
+              //    Formato: "Medellín, viernes 17 de julio de 2026 (@EPMestamosahi) | Texto real..."
+              //    Se conserva el texto que viene después del "|".
+              $pNodes = $contentXpath->query('.//p', $bodyNode);
+              foreach ($pNodes as $pNode) {
+                $text = trim(str_replace("\xc2\xa0", ' ', $pNode->textContent));
+                if (preg_match('/@EPM\w*/i', $text) && strpos($text, '|') !== false) {
+                  // Capturar ciudad (antes de la primera coma).
+                  $commaPos = strpos($text, ',');
+                  if ($commaPos !== false) {
+                    $radicado_en = trim(substr($text, 0, $commaPos));
+                  }
+                  // Conservar el texto después del "|".
+                  $pipePos = strpos($text, '|');
+                  $afterPipe = trim(substr($text, $pipePos + 1));
+                  // Vaciar los hijos del <p> y reemplazar con el texto restante.
+                  while ($pNode->firstChild) {
+                    $pNode->removeChild($pNode->firstChild);
+                  }
+                  if (!empty($afterPipe)) {
+                    $pNode->appendChild($contentDom->createTextNode($afterPipe));
+                  } else {
+                    // Si no queda texto, eliminar el párrafo completo.
+                    $pNode->parentNode->removeChild($pNode);
+                  }
+                  break;
+                }
+              }
+
+              // 3. Eliminar todos los elementos <ul> del contenido.
+              $ulNodes = $contentXpath->query('.//ul', $bodyNode);
+              foreach ($ulNodes as $ulNode) {
+                $ulNode->parentNode->removeChild($ulNode);
+              }
+
+              // Serializar el innerHTML limpio del body.
+              $innerHtml = '';
+              foreach ($bodyNode->childNodes as $child) {
+                $innerHtml .= $contentDom->saveHTML($child);
+              }
+              $content_html = $innerHtml;
+              $extractedFromJson = true;
+            }
+          }
+
+          if (!$extractedFromJson) {
+            $this->logger->warning('EPM Sync: No se pudo parsear data-cmp-data-layer, usando DOM como fallback.');
+          }
+        }
+
+        // --- Fallback DOM si el JSON no entregó contenido ---
+        if (!$extractedFromJson) {
+          $contentDd = $xpath->query(
+            './/div[contains(@class, "cmp-contentfragment__element--content")]//dd[contains(@class, "cmp-contentfragment__element-value")]',
+            $articleNode
+          )->item(0);
+
+          if ($contentDd) {
+            // 1. Eliminar el primer <p> con imagen de portada.
+            $firstImgP = $xpath->query('./p[.//img]', $contentDd)->item(0);
+            if ($firstImgP) {
+              $imgTag = $xpath->query('.//img', $firstImgP)->item(0);
+              if ($imgTag) {
+                $img_url = $imgTag->getAttribute('src');
+              }
+              $firstImgP->parentNode->removeChild($firstImgP);
+            }
+
+            // 2. Extraer ciudad y limpiar el prefijo de cabecera EPM del primer <p> que lo contenga.
+            //    Se conserva el texto que viene después del "|".
+            $pNodes = $xpath->query('./p | .//p', $contentDd);
+            foreach ($pNodes as $pNode) {
+              $text = trim(str_replace("\xc2\xa0", ' ', $pNode->textContent));
+              if (preg_match('/@EPM\w*/i', $text) && strpos($text, '|') !== false) {
+                $commaPos = strpos($text, ',');
+                if ($commaPos !== false) {
+                  $radicado_en = trim(substr($text, 0, $commaPos));
+                }
+                // Conservar el texto después del "|".
+                $pipePos = strpos($text, '|');
+                $afterPipe = trim(substr($text, $pipePos + 1));
+                while ($pNode->firstChild) {
+                  $pNode->removeChild($pNode->firstChild);
+                }
+                if (!empty($afterPipe)) {
+                  $pNode->appendChild($dom->createTextNode($afterPipe));
+                } else {
+                  $pNode->parentNode->removeChild($pNode);
+                }
+                break;
+              }
+            }
+
+            // 3. Eliminar todos los elementos <ul> del contenido.
+            $ulNodes = $xpath->query('.//ul', $contentDd);
+            foreach ($ulNodes as $ulNode) {
+              $ulNode->parentNode->removeChild($ulNode);
+            }
+
+            $innerHtml = '';
+            foreach ($contentDd->childNodes as $child) {
+              $innerHtml .= $dom->saveHTML($child);
+            }
+            $content_html = $innerHtml;
+            $this->logger->info('EPM Sync: Contenido extraído desde DOM (fallback).');
+          } else {
+            // Fallback genérico.
+            $fallbackNodes = $xpath->query('.//dd[contains(@class, "cmp-contentfragment__element-value")]', $articleNode);
+            foreach ($fallbackNodes as $dd) {
+              foreach ($dd->childNodes as $child) {
+                $content_html .= $dom->saveHTML($child);
+              }
+            }
+          }
+
+          // Imagen desde DOM si no fue capturada por JSON.
+          if (empty($img_url)) {
+            $imgNodeInContent = $xpath->query(
+              './/div[contains(@class, "cmp-contentfragment__element--content")]//img',
+              $articleNode
+            )->item(0);
+            if ($imgNodeInContent) {
+              $img_url = $imgNodeInContent->getAttribute('src');
+            } else {
+              $imgNodeFallback = $xpath->query('.//img', $articleNode)->item(0);
+              if ($imgNodeFallback) {
+                $img_url = $imgNodeFallback->getAttribute('src');
+              }
+            }
+          }
+
+          // Alt imagen desde DOM.
+          $altDd = $xpath->query(
+            './/div[contains(@class, "cmp-contentfragment__element--altImagen")]//dd[contains(@class, "cmp-contentfragment__element-value")]',
+            $articleNode
+          )->item(0);
+          if ($altDd) {
+            $altText = trim($altDd->textContent);
+            if (!empty($altText)) {
+              $alt_imagen = $altText;
+            }
+          }
         }
       } else {
-        $this->logger->info('EPM Sync: Contenido no encontrado en .cmp-text, usando fallback');
+        // Fallback si no se encuentra el article con el modelo EPM
+        $this->logger->info('EPM Sync: Article de EPM no encontrado, usando fallback genérico.');
         $fallbackNodes = $xpath->query('//main//p | //article//p | //div[contains(@class, "content")]//p');
         foreach ($fallbackNodes as $p) {
           $content_html .= $dom->saveHTML($p);
         }
+        $imgNodeFallback = $xpath->query('//main//img | //article//img')->item(0);
+        if ($imgNodeFallback) {
+          $img_url = $imgNodeFallback->getAttribute('src');
+        }
       }
 
+      // Construir URL absoluta de la imagen
+      if (!empty($img_url) && strpos($img_url, 'http') !== 0) {
+        $img_url = 'https://www.epm.com.co' . $img_url;
+      }
+
+      // Extraer resumen desde el primer párrafo del contenido
       $excerpt = '';
       if (!empty($content_html)) {
         $excerptDom = new \DOMDocument();
         @$excerptDom->loadHTML(mb_convert_encoding($content_html, 'HTML-ENTITIES', 'UTF-8'));
         $excerptXpath = new \DOMXPath($excerptDom);
-        $firstP = $excerptXpath->query('//p')->item(0);
-        if ($firstP) {
-          $excerpt = trim($firstP->textContent);
-          if (mb_strlen($excerpt) > 300) {
-            $excerpt = mb_substr($excerpt, 0, 297) . '...';
+        // Buscar el primer párrafo que tenga texto real (ignorar párrafos solo con imágenes)
+        $paragraphs = $excerptXpath->query('//p');
+        foreach ($paragraphs as $p) {
+          $text = trim($p->textContent);
+          if (!empty($text)) {
+            $excerpt = $text;
+            break;
           }
+        }
+        if (mb_strlen($excerpt) > 300) {
+          $excerpt = mb_substr($excerpt, 0, 297) . '...';
         }
       }
 
-      $imgNode = $xpath->query('//div[contains(@class, "cmp-image")]//img | //article//img')->item(0);
+      // Descargar y guardar la imagen si existe
       $file = null;
-      if ($imgNode) {
-        $img_url = $imgNode->getAttribute('src');
-        if (!empty($img_url)) {
-          if (strpos($img_url, 'http') !== 0) {
-            $img_url = 'https://www.epm.com.co' . $img_url;
-          }
+      if (!empty($img_url)) {
+        try {
+          $image_data = (string) $this->httpClient->request('GET', $img_url)->getBody();
+          $filename = basename(parse_url($img_url, PHP_URL_PATH));
+          $filename = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
+          if (!empty($filename)) {
+            $directory = 'public://news_images';
+            $this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+            $file_uri = $directory . '/' . $filename;
+            $file_uri = $this->fileSystem->saveData($image_data, $file_uri, FileSystemInterface::EXISTS_RENAME);
 
-          try {
-            $image_data = (string) $this->httpClient->request('GET', $img_url)->getBody();
-            $filename = basename(parse_url($img_url, PHP_URL_PATH));
-            $filename = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
-            if (!empty($filename)) {
-              $directory = 'public://news_images';
-              $this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-              $file_uri = $directory . '/' . $filename;
-              $file_uri = $this->fileSystem->saveData($image_data, $file_uri, FileSystemInterface::EXISTS_RENAME);
-
-              $file = File::create([
-                'uri' => $file_uri,
-                'status' => 1,
-              ]);
-              $file->save();
-            }
-          } catch (\Exception $e) {
+            $file = File::create([
+              'uri' => $file_uri,
+              'status' => 1,
+            ]);
+            $file->save();
+            $this->logger->info('EPM Sync: Imagen guardada: @uri', ['@uri' => $file_uri]);
           }
+        } catch (\Exception $imgEx) {
+          $this->logger->warning('EPM Sync: No se pudo descargar la imagen @url: @msg', [
+            '@url' => $img_url,
+            '@msg' => $imgEx->getMessage(),
+          ]);
         }
       }
 
@@ -1124,11 +1390,20 @@ class SyncService
       if ($file) {
         $node_data['field_imagen_destacada'] = [
           'target_id' => $file->id(),
-          'alt' => 'Foto EPM',
+          'alt' => $alt_imagen,
         ];
         $node_data['field_credito_imagen_destacada'] = [
           'value' => 'EPM',
         ];
+      }
+
+      if (!empty($radicado_en)) {
+        $node_data['field_radicado_en'] = ['value' => $radicado_en];
+      }
+
+      $term_id = $this->getTaxonomyTermIdByName('EPM');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
       }
 
       $node = $node_storage->create($node_data);
@@ -1144,6 +1419,257 @@ class SyncService
       ]);
       return FALSE;
     }
+  }
+
+  /**
+   * Fetches the list of news from Corantioquia's website.
+   *
+   * @return array
+   *   An array of news data containing title, image url, excerpt and detail url.
+   */
+  public function getCorantioquiaNewsList()
+  {
+    $url = 'https://www.corantioquia.gov.co/?s=caucasia,%20bajo%20cauca';
+    $items = [];
+
+    try {
+      $this->logger->info('Corantioquia Sync: Iniciando carga de lista desde @url', ['@url' => $url]);
+      
+      $response = $this->httpClient->request('GET', $url, [
+        'verify' => false,
+        'headers' => [
+          'User-Agent' => 'Mozilla/5.0 (compatible; DrupalBot/1.0)',
+        ],
+      ]);
+      $html = (string) $response->getBody();
+      
+      $this->logger->info('Corantioquia Sync: HTML obtenido exitosamente. Longitud: @length', ['@length' => strlen($html)]);
+
+      $dom = new \DOMDocument();
+      @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+      $xpath = new \DOMXPath($dom);
+
+      // Buscar artículos en los resultados de búsqueda (estructura específica de Corantioquia)
+      $nodes = $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " page-content ")]//article[contains(concat(" ", normalize-space(@class), " "), " post ")]');
+
+      // Fallback
+      if ($nodes->length === 0) {
+        $this->logger->warning('Corantioquia Sync: No se encontraron artículos con el selector principal. Usando fallback.');
+        $nodes = $xpath->query('//article | //*[contains(concat(" ", normalize-space(@class), " "), " elementor-post ")]');
+      }
+
+      $this->logger->info('Corantioquia Sync: Nodos de artículos encontrados: @count', ['@count' => $nodes->length]);
+
+      foreach ($nodes as $index => $node) {
+        $titleNode = $xpath->query('.//h2//a | .//h3//a | .//*[contains(@class, "entry-title")]//a', $node)->item(0);
+        if (!$titleNode) {
+           $this->logger->warning('Corantioquia Sync: Artículo índice @index no tiene title node.', ['@index' => $index]);
+           continue;
+        }
+
+        $detail_url = $titleNode->getAttribute('href');
+        $title = trim($titleNode->textContent);
+
+        $imgNode = $xpath->query('.//img', $node)->item(0);
+        if (!$imgNode) {
+           $this->logger->warning('Corantioquia Sync: Artículo "@title" no tiene imagen.', ['@title' => $title]);
+           continue;
+        }
+        $img_url = $imgNode->getAttribute('src');
+
+        $excerptNode = $xpath->query('.//p | .//*[contains(@class, "entry-summary")]', $node)->item(0);
+        $excerpt = $excerptNode ? trim($excerptNode->textContent) : '';
+
+        if (!empty($title) && !empty($detail_url)) {
+          $this->logger->info('Corantioquia Sync: Item extraído correctamente: @title', ['@title' => $title]);
+          $items[] = [
+            'title' => $title,
+            'image' => $img_url,
+            'excerpt' => $excerpt,
+            'url' => $detail_url,
+          ];
+        }
+      }
+    } catch (\Exception $e) {
+      $this->logger->error('Error fetching Corantioquia news list: @message', ['@message' => $e->getMessage()]);
+    }
+
+    return $items;
+  }
+
+  /**
+   * Processes a single news item from Corantioquia.
+   *
+   * @param array $item
+   *   The news item data.
+   *
+   * @return bool|string
+   *   True if created, 'exists' if duplicate, False on error.
+   */
+  public function processCorantioquiaNewsItem(array $item)
+  {
+    $this->logger->info('Corantioquia Sync: Validando si la noticia "@title" ya existe.', ['@title' => $item['title']]);
+
+    $node_storage = $this->entityTypeManager->getStorage('node');
+    $query = $node_storage->getQuery()
+      ->condition('type', 'news')
+      ->condition('title', $item['title'])
+      ->accessCheck(FALSE);
+    $existing = $query->execute();
+
+    if (!empty($existing)) {
+      $this->logger->info('Corantioquia Sync: La noticia "@title" ya existe. Omitiendo.', ['@title' => $item['title']]);
+      return 'exists';
+    }
+
+    try {
+      $this->logger->info('Corantioquia Sync: Obteniendo detalle desde @url', ['@url' => $item['url']]);
+      $response = $this->httpClient->request('GET', $item['url'], [
+        'verify' => false,
+        'headers' => [
+          'User-Agent' => 'Mozilla/5.0 (compatible; DrupalBot/1.0)',
+        ],
+      ]);
+      $html = (string) $response->getBody();
+
+      $dom = new \DOMDocument();
+      @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+      $xpath = new \DOMXPath($dom);
+
+      // Elementor Single Post, o <main> o <div class="entry-content">
+      $contentNodes = $xpath->query('//div[contains(@data-elementor-type, "single")] | //main | //div[contains(@class, "entry-content")]');
+
+      $content_html = '';
+      $radicado_en = '';
+
+      if ($contentNodes->length > 0) {
+        $this->logger->info('Corantioquia Sync: Encontrado nodo principal de contenido.');
+        $contentNode = $contentNodes->item(0);
+        
+        // Buscar ciudad y fecha en el texto (ej. "Caucasia, 20 de agosto...")
+        $paragraphs = $xpath->query('.//p', $contentNode);
+        foreach ($paragraphs as $pNode) {
+          $text = trim(str_replace("\xc2\xa0", ' ', $pNode->textContent));
+          if (preg_match('/^([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+),\s+\d{1,2}\s+de\s+[a-zA-Z]+\s+de\s+\d{4}/su', $text, $matches)) {
+            $radicado_en = trim($matches[1]);
+            $this->logger->info('Corantioquia Sync: Ciudad extraída: @ciudad', ['@ciudad' => $radicado_en]);
+            break;
+          }
+        }
+
+        $content_html = $dom->saveHTML($contentNode);
+      } else {
+        $this->logger->warning('Corantioquia Sync: Nodo principal no encontrado, usando fallback para contenido.');
+        $fallbackNodes = $xpath->query('//article//p | //main//p');
+        foreach ($fallbackNodes as $p) {
+          $content_html .= $dom->saveHTML($p);
+        }
+      }
+
+      if (empty($content_html)) {
+        $this->logger->warning('Corantioquia Sync: Contenido no encontrado, usando excerpt.');
+        $content_html = '<p>' . $item['excerpt'] . '</p>';
+      }
+
+      // Descargar y guardar la imagen si existe
+      $file = null;
+      if (!empty($item['image'])) {
+        try {
+          $this->logger->info('Corantioquia Sync: Descargando imagen desde @url', ['@url' => $item['image']]);
+          $image_data = (string) $this->httpClient->request('GET', $item['image'], [
+            'verify' => false,
+            'headers' => [
+              'User-Agent' => 'Mozilla/5.0 (compatible; DrupalBot/1.0)',
+            ],
+          ])->getBody();
+          $filename = basename(parse_url($item['image'], PHP_URL_PATH));
+          $filename = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $filename);
+          if (!empty($filename)) {
+            $directory = 'public://news_images';
+            $this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+            $file_uri = $directory . '/' . $filename;
+            $file_uri = $this->fileSystem->saveData($image_data, $file_uri, FileSystemInterface::EXISTS_RENAME);
+
+            $file = File::create([
+              'uri' => $file_uri,
+              'status' => 1,
+            ]);
+            $file->save();
+            $this->logger->info('Corantioquia Sync: Imagen guardada exitosamente.');
+          }
+        } catch (\Exception $imgEx) {
+          $this->logger->warning('Corantioquia Sync: No se pudo descargar la imagen @url: @msg', [
+            '@url' => $item['image'],
+            '@msg' => $imgEx->getMessage(),
+          ]);
+        }
+      }
+
+      $node_data = [
+        'type' => 'news',
+        'title' => $item['title'],
+        'field_resumen' => [
+          'value' => $item['excerpt'],
+          'format' => 'basic_html',
+        ],
+        'field_contenido' => [
+          'value' => $content_html,
+          'format' => 'full_html',
+        ],
+        'status' => 0, // Borrador
+      ];
+
+      if ($file) {
+        $node_data['field_imagen_destacada'] = [
+          'target_id' => $file->id(),
+          'alt' => 'Foto Corantioquia',
+        ];
+        $node_data['field_credito_imagen_destacada'] = [
+          'value' => 'Corantioquia',
+        ];
+      }
+
+      if (!empty($radicado_en)) {
+        $node_data['field_radicado_en'] = ['value' => $radicado_en];
+      }
+
+      $term_id = $this->getTaxonomyTermIdByName('Corantioquia');
+      if ($term_id) {
+        $node_data['field_fuente_de_informacion'] = ['target_id' => $term_id];
+      }
+
+      $node = $node_storage->create($node_data);
+      $node->save();
+
+      $this->logger->info('Corantioquia Sync: Nodo de noticia "@title" creado exitosamente.', ['@title' => $item['title']]);
+
+      return TRUE;
+    } catch (\Exception $e) {
+      $this->logger->error('Error processing Corantioquia news item @title: @message', [
+        '@title' => $item['title'],
+        '@message' => $e->getMessage(),
+      ]);
+      return FALSE;
+    }
+  }
+
+  /**
+   * Obtiene el ID del término de taxonomía a partir de su nombre.
+   *
+   * @param string $name
+   *   El nombre del término.
+   *
+   * @return int|null
+   *   El ID del término o null si no se encuentra.
+   */
+  protected function getTaxonomyTermIdByName($name) {
+    $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $terms = $term_storage->loadByProperties(['name' => $name]);
+    if (!empty($terms)) {
+      $term = reset($terms);
+      return $term->id();
+    }
+    return NULL;
   }
 
 }
