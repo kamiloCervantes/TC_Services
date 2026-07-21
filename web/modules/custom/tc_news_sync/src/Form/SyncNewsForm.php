@@ -49,12 +49,12 @@ class SyncNewsForm extends FormBase
     $batch = [
       'title' => $this->t('Sincronizando noticias...'),
       'operations' => [
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchMonteriaOperation', []],
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUrraOperation', []],
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUnicordobaOperation', []],
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCordobaGobOperation', []],
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchEpmOperation', []],
-        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCorantioquiaOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchMonteriaOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUrraOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUnicordobaOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCordobaGobOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchEpmOperation', []],
+        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCorantioquiaOperation', []],
       ],
       'finished' => '\Drupal\tc_news_sync\Form\SyncNewsForm::batchFinished',
     ];
