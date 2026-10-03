@@ -3,10 +3,14 @@ langcode: es
 status: true
 dependencies:
   config:
+    - filter.format.basic_html
+    - filter.format.full_html
+    - node.type.news
     - taxonomy.vocabulary.tags
   module:
     - contextual
     - file
+    - filter
     - navigation
     - node
     - path
@@ -20,16 +24,22 @@ weight: 2
 is_admin: false
 permissions:
   - 'access administration pages'
+  - 'access content'
   - 'access content overview'
   - 'access contextual links'
   - 'access files overview'
   - 'access navigation'
+  - 'administer node published status'
   - 'administer url aliases'
+  - 'create news content'
   - 'create terms in tags'
   - 'create url aliases'
   - 'delete own files'
+  - 'edit own news content'
   - 'edit terms in tags'
   - 'revert all revisions'
+  - 'use text format basic_html'
+  - 'use text format full_html'
   - 'view all revisions'
   - 'view own unpublished content'
   - 'view the administration theme'
