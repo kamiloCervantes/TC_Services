@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks and mail handling for Tierra Caliente Auth module.
+ */
+
+use Drupal\Core\Render\Markup;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function tc_auth_theme($existing, $type, $theme, $path) {
+  return [
+    'mimemail_message__tc_auth__otp_verification' => [
+      'variables' => [
+        'recipient_name' => '',
+        'otp_code' => '',
+        'expires_minutes' => 15,
+        'site_name' => '',
+      ],
+      'template' => 'mimemail-message--tc-auth--otp-verification',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_mail().
+ */
+function tc_auth_mail($key, &$message, $params) {
+  $site_name = \Drupal::config('system.site')->get('name') ?: 'Tierra Caliente';
+
+  switch ($key) {
+    case 'otp_verification':
+      $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
+      $message['subject'] = t('[@site_name] Tu código de verificación: @otp', [
+        '@site_name' => $site_name,
+        '@otp' => $params['otp_code'],
+      ]);
+
+      $recipient_name = !empty($params['name']) ? $params['name'] : 'Usuario';
+      $otp_code = (string) ($params['otp_code'] ?? '');
+      $expires_minutes = (int) ($params['expires_minutes'] ?? 15);
+
+      // Load template directly and render with Twig inline to guarantee variable substitution
+      $module_path = \Drupal::service('extension.list.module')->getPath('tc_auth');
+      $template_file = DRUPAL_ROOT . '/' . $module_path . '/templates/mimemail-message--tc-auth--otp-verification.html.twig';
+
+      if (file_exists($template_file)) {
+        $template_raw = file_get_contents($template_file);
+        $rendered_body = \Drupal::service('twig')->renderInline($template_raw, [
+          'recipient_name' => $recipient_name,
+          'otp_code' => $otp_code,
+          'expires_minutes' => $expires_minutes,
+          'site_name' => $site_name,
+        ]);
+      }
+      else {
+        $rendered_body = '<p>¡Hola ' . htmlspecialchars($recipient_name) . '!</p><p>Tu código de verificación es: <strong>' . htmlspecialchars($otp_code) . '</strong> (expira en ' . $expires_minutes . ' minutos).</p>';
+      }
+
+      $message['body'][] = Markup::create($rendered_body);
+      break;
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function tc_auth_user_login(UserInterface $account) {
+  /** @var \Drupal\tc_auth\Service\LoginHistoryManager $history_manager */
+  $history_manager = \Drupal::service('tc_auth.login_history_manager');
+  $request = \Drupal::request();
+  $ip = $request->getClientIp();
+  $user_agent = $request->headers->get('User-Agent') ?: 'Unknown';
+
+  $history_manager->recordLogin((int) $account->id(), $ip, $user_agent, 'session_cookie');
+}

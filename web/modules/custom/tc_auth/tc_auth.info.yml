@@ -1,0 +1,11 @@
+name: 'Tierra Caliente Auth & OTP'
+type: module
+description: 'Servicios de autenticacion, registro, verificacion OTP por correo y auditoria historica de inicios de sesion para Tierra Caliente.'
+package: 'Tierra Caliente'
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:user
+  - simple_oauth:simple_oauth
+  - mailsystem:mailsystem
+  - mimemail:mimemail
+  - smtp:smtp

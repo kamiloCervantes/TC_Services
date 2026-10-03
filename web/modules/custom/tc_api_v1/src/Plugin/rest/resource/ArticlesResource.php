@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
  *   id = "tc_api_v1_articles",
  *   label = @Translation("Articles API v1"),
  *   uri_paths = {
- *     "canonical" = "/api/v1/articles",
+ *     "canonical" = "/api/v1/articles/{id}",
  *     "collection" = "/api/v1/articles"
  *   }
  * )
@@ -31,12 +31,14 @@ class ArticlesResource extends ResourceBase {
   public function routes() {
     $collection = parent::routes();
 
-    // Modificar la ruta GET canónica para que el parámetro {id} sea opcional.
-    // De esta manera, /api/v1/articles/{id} y /api/v1/articles usarán la misma ruta
-    // y compartirán la configuración de REST UI (formatos y autenticación).
     $canonical_route = $collection->get("rest.{$this->pluginId}.GET");
     if ($canonical_route) {
-      $canonical_route->setDefault('id', NULL);
+      $canonical_route->setPath('/api/v1/articles/{id}');
+
+      $collection_route = clone $canonical_route;
+      $collection_route->setPath('/api/v1/articles');
+      $collection_route->setDefault('id', NULL);
+      $collection->add("rest.{$this->pluginId}.GET.collection", $collection_route);
     }
 
     return $collection;

@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ */
+
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\mimemail_example\Hook\MimemailExampleHooks;
+
+/**
+ * @file
+ * Hook implementations for the Mime Mail Example module.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+#[LegacyHook]
+function mimemail_example_theme() {
+  return \Drupal::service(MimemailExampleHooks::class)->theme();
+}
+
+/**
+ * Implements hook_mail().
+ */
+#[LegacyHook]
+function mimemail_example_mail($key, &$message, $params) {
+  \Drupal::service(MimemailExampleHooks::class)->mail($key, $message, $params);
+}

@@ -1,0 +1,128 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the tc_auth module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function tc_auth_schema() {
+  $schema['tc_auth_otp'] = [
+    'description' => 'Stores OTP codes for account verification and password resets.',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary Key: Unique OTP ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'email' => [
+        'description' => 'Target user email address.',
+        'type' => 'varchar',
+        'length' => 254,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'uid' => [
+        'description' => 'The user ID associated with this OTP.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'otp_hash' => [
+        'description' => 'Hashed OTP code.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'purpose' => [
+        'description' => 'Purpose of OTP: register, login_2fa, reset_password.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'register',
+      ],
+      'expires' => [
+        'description' => 'Unix timestamp when this OTP expires.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'attempts' => [
+        'description' => 'Failed verification attempts count.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'created' => [
+        'description' => 'Unix timestamp when the OTP was generated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'email_purpose' => ['email', 'purpose'],
+      'uid' => ['uid'],
+      'expires' => ['expires'],
+    ],
+  ];
+
+  $schema['tc_auth_login_history'] = [
+    'description' => 'Stores historical audit log of user logins.',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary Key: Unique log entry ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'uid' => [
+        'description' => 'The user ID who logged in.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'timestamp' => [
+        'description' => 'Unix timestamp of the login event.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'ip_address' => [
+        'description' => 'IP address of the client.',
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'user_agent' => [
+        'description' => 'Browser / client User Agent string.',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'auth_method' => [
+        'description' => 'Authentication method used (oauth2_password, session, otp).',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => 'oauth2_password',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'uid_timestamp' => ['uid', 'timestamp'],
+      'timestamp' => ['timestamp'],
+    ],
+  ];
+
+  return $schema;
+}

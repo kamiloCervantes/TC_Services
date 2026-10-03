@@ -1,0 +1,18 @@
+services:
+  tc_auth.otp_manager:
+    class: Drupal\tc_auth\Service\OtpManager
+    arguments: ['@database', '@plugin.manager.mail', '@flood']
+
+  tc_auth.login_history_manager:
+    class: Drupal\tc_auth\Service\LoginHistoryManager
+    arguments: ['@database']
+
+  tc_auth.repositories.user:
+    class: Drupal\tc_auth\Repositories\UserRepository
+    arguments: ['@user.auth', '@entity_type.manager']
+
+  tc_auth.oauth_token_subscriber:
+    class: Drupal\tc_auth\EventSubscriber\OAuthTokenSubscriber
+    arguments: ['@tc_auth.login_history_manager', '@entity_type.manager']
+    tags:
+      - { name: event_subscriber }

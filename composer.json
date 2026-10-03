@@ -20,8 +20,13 @@
         "drupal/core-project-message": "^11.4",
         "drupal/core-recipe-unpack": "^11.4",
         "drupal/core-recommended": "^11.4",
+        "drupal/login_history": "^2.0",
+        "drupal/mailsystem": "^4.5",
+        "drupal/mimemail": "^2.0",
         "drupal/paragraphs": "^1.20",
         "drupal/restui": "^1.22",
+        "drupal/simple_oauth": "^6.0",
+        "drupal/smtp": "^1.4",
         "drush/drush": "^13.7"
     },
     "conflict": {

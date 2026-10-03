@@ -1,0 +1,51 @@
+tc_auth.register:
+  path: '/api/v1/auth/register'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\RegisterController::register'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+tc_auth.verify_otp:
+  path: '/api/v1/auth/verify-otp'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\OtpVerificationController::verifyOtp'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+tc_auth.resend_otp:
+  path: '/api/v1/auth/resend-otp'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\OtpVerificationController::resendOtp'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+tc_auth.user_me:
+  path: '/api/v1/user/me'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\UserMeController::me'
+  methods: [GET]
+  requirements:
+    _role: 'authenticated'
+  options:
+    _auth: ['oauth2']
+
+tc_auth.login_history:
+  path: '/api/v1/user/login-history'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\UserHistoryController::getLoginHistory'
+  methods: [GET]
+  requirements:
+    _permission: 'access site reports'
+  options:
+    _auth: ['oauth2']
+
+tc_auth.admin_report:
+  path: '/admin/reports/tc-login-history'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\AdminHistoryController::report'
+    _title: 'Inicios de Sesión (Tierra Caliente)'
+  requirements:
+    _permission: 'access site reports'

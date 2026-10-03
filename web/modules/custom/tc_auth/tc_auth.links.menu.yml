@@ -1,0 +1,6 @@
+tc_auth.admin_report:
+  title: 'Inicios de Sesión (Tierra Caliente)'
+  description: 'Auditoría histórica de accesos, direcciones IP y dispositivos de usuarios.'
+  parent: system.admin_reports
+  route_name: tc_auth.admin_report
+  weight: 25
