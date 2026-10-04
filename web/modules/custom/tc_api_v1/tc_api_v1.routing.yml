@@ -115,3 +115,21 @@ tc_api_v1.user_comment_likes_get:
     _access: 'TRUE'
   options:
     _auth: ['oauth2', 'cookie']
+
+tc_api_v1.article_views_post:
+  path: '/api/v1/articles/{articleId}/views'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\ViewsController::recordView'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
+
+tc_api_v1.article_views_get:
+  path: '/api/v1/articles/{articleId}/views'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\ViewsController::getViews'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'

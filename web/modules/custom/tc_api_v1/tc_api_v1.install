@@ -195,6 +195,67 @@ function tc_api_v1_schema() {
     ],
   ];
 
+  $schema['tc_article_views'] = [
+    'description' => 'Almacena el registro histórico de visualizaciones de noticias con IP y usuario.',
+    'fields' => [
+      'id' => [
+        'description' => 'Clave primaria autoincremental.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'ID de la noticia (nodo).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'uid' => [
+        'description' => 'ID del usuario autenticado (0 si es anónimo).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'user_name' => [
+        'description' => 'Nombre del usuario o identificador de cliente.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'ip_address' => [
+        'description' => 'Dirección IP del cliente.',
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'user_agent' => [
+        'description' => 'User agent del navegador o cliente.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'created' => [
+        'description' => 'Timestamp de cuando se visualizó la noticia.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid' => ['nid'],
+      'uid' => ['uid'],
+      'created' => ['created'],
+      'ip_address' => ['ip_address'],
+      'nid_user_ip' => ['nid', 'user_name', 'ip_address'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -365,4 +426,21 @@ function tc_api_v1_update_10005() {
   }
 
   return \Drupal::translation()->translate('Tabla tc_comment_likes y campo likes configurados exitosamente.');
+}
+
+
+/**
+ * Crea la tabla tc_article_views para registrar el histórico de visualizaciones de noticias.
+ */
+function tc_api_v1_update_10006() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  $module_schema = tc_api_v1_schema();
+
+  if (!$schema->tableExists('tc_article_views')) {
+    $schema->createTable('tc_article_views', $module_schema['tc_article_views']);
+    return \Drupal::translation()->translate('Tabla tc_article_views creada exitosamente.');
+  }
+
+  return \Drupal::translation()->translate('La tabla tc_article_views ya existe.');
 }
