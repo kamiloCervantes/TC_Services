@@ -84,7 +84,7 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
       $uid = (int) ($data['uid'] ?? $data['user_id']);
     }
 
-    $ip = $request->getClientIp() ?: '';
+    $ip = !empty($data['ip']) ? trim($data['ip']) : ($request->getClientIp() ?: '');
     $user_agent = $request->headers->get('User-Agent') ?: '';
 
     try {

@@ -102,18 +102,35 @@ class LikeManager {
     }
 
     if ($action === 'unlike') {
-      if (!$existing) {
-        $total = $this->updateNodeLikes($nid);
-        return [
-          'status' => 'success',
-          'action' => 'not_liked',
-          'liked' => FALSE,
-          'total_likes' => $total,
-          'nid' => $nid,
-          'message' => $this->t('No tenías registrado un like para esta noticia.'),
-        ];
+      if ($existing) {
+        return $this->removeLikeRecord((int) $existing->id, $nid);
       }
-      return $this->removeLikeRecord((int) $existing->id, $nid);
+
+      // Si no se encontró por IP/UID específico pero el usuario solicita unlike,
+      // intentamos eliminar un like anónimo reciente de este artículo si existe
+      if ($uid === 0) {
+        $any_like = $this->database->select('tc_article_likes', 'l')
+          ->fields('l', ['id'])
+          ->condition('l.nid', $nid)
+          ->condition('l.uid', 0)
+          ->orderBy('l.created', 'DESC')
+          ->range(0, 1)
+          ->execute()
+          ->fetchField();
+        if ($any_like) {
+          return $this->removeLikeRecord((int) $any_like, $nid);
+        }
+      }
+
+      $total = $this->updateNodeLikes($nid);
+      return [
+        'status' => 'success',
+        'action' => 'unliked',
+        'liked' => FALSE,
+        'total_likes' => $total,
+        'nid' => $nid,
+        'message' => $this->t('Like removido exitosamente.'),
+      ];
     }
 
     // Default: toggle
