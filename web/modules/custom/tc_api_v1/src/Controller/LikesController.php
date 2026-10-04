@@ -87,9 +87,13 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
         $xff = $request->headers->get('X-Forwarded-For');
     $ip = !empty($data['ip']) ? trim($data['ip']) : ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
     $user_agent = $request->headers->get('User-Agent') ?: '';
+    $user_name = trim($data['user_name'] ?? ($data['username'] ?? ($data['name'] ?? '')));
+    if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+      $user_name = $current_user->getDisplayName();
+    }
 
     try {
-      $result = $this->likeManager->processLike($nid, $uid, $ip, $user_agent, $action);
+      $result = $this->likeManager->processLike($nid, $uid, $ip, $user_agent, $action, $user_name);
 
       // Desactivar caché HTTP para respuestas dinámicas
       if (\Drupal::hasService('page_cache_kill_switch')) {
@@ -150,8 +154,13 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
 
     $ip = $request->getClientIp() ?: '';
 
+    $user_name = trim($request->query->get('user_name') ?: ($request->query->get('username') ?: ''));
+    if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+      $user_name = $current_user->getDisplayName();
+    }
+
     $total = $this->likeManager->getTotalLikes($nid);
-    $liked = $this->likeManager->hasUserLiked($nid, $uid, $ip);
+    $liked = $this->likeManager->hasUserLiked($nid, $uid, $ip, $user_name);
 
     $responseData = [
       'status' => 'success',
@@ -196,7 +205,12 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
         $xff = $request->headers->get('X-Forwarded-For');
     $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
 
-    $nids = $this->likeManager->getUserLikedNodeIds($uid, $ip);
+    $user_name = trim($request->query->get('user_name') ?: ($request->query->get('username') ?: ''));
+    if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+      $user_name = $current_user->getDisplayName();
+    }
+
+    $nids = $this->likeManager->getUserLikedNodeIds($uid, $ip, $user_name);
 
     if (\Drupal::hasService('page_cache_kill_switch')) {
       \Drupal::service('page_cache_kill_switch')->trigger();

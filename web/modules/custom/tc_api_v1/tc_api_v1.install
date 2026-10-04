@@ -89,6 +89,13 @@ function tc_api_v1_schema() {
         'not null' => TRUE,
         'default' => 0,
       ],
+      'user_name' => [
+        'description' => 'Nombre del usuario o identificador de cliente para combinar con IP.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
       'ip_address' => [
         'description' => 'Dirección IP desde la cual se dio el like.',
         'type' => 'varchar',
@@ -115,6 +122,7 @@ function tc_api_v1_schema() {
       'nid' => ['nid'],
       'nid_uid' => ['nid', 'uid'],
       'nid_ip' => ['nid', 'ip_address'],
+      'nid_user_ip' => ['nid', 'user_name', 'ip_address'],
       'created' => ['created'],
     ],
   ];
@@ -231,4 +239,34 @@ function tc_api_v1_update_10003() {
   }
 
   return \Drupal::translation()->translate('La tabla tc_article_likes ya existe en la base de datos.');
+}
+
+/**
+ * Agrega el campo user_name a la tabla tc_article_likes para validar likes combinando usuario e IP.
+ */
+function tc_api_v1_update_10004() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+
+  if ($schema->tableExists('tc_article_likes') && !$schema->fieldExists('tc_article_likes', 'user_name')) {
+    $schema->addField('tc_article_likes', 'user_name', [
+      'description' => 'Nombre del usuario o identificador de cliente para combinar con IP.',
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE,
+      'default' => '',
+    ]);
+
+    $schema->addIndex('tc_article_likes', 'nid_user_ip', ['nid', 'user_name', 'ip_address'], [
+      'fields' => [
+        'nid' => ['nid'],
+        'user_name' => ['user_name'],
+        'ip_address' => ['ip_address'],
+      ],
+    ]);
+
+    return \Drupal::translation()->translate('Campo user_name agregado a tc_article_likes exitosamente.');
+  }
+
+  return \Drupal::translation()->translate('El campo user_name ya existe.');
 }

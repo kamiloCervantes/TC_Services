@@ -77,14 +77,18 @@ class LikeManager {
    * @return array
    *   Resultado con 'status', 'action', 'liked', 'total_likes', 'nid'.
    */
+/**
+   * Procesa la acción de dar/quitar like combinando nombre de usuario con IP.
+   */
   public function processLike(
     int $nid,
     int $uid = 0,
     string $ip = '',
     string $user_agent = '',
-    string $action = 'toggle'
+    string $action = 'toggle',
+    string $user_name = ''
   ): array {
-    $existing = $this->findExistingLike($nid, $uid, $ip);
+    $existing = $this->findExistingLike($nid, $uid, $ip, $user_name);
 
     if ($action === 'like') {
       if ($existing) {
@@ -98,7 +102,7 @@ class LikeManager {
           'message' => $this->t('Ya habías indicado que te gusta esta noticia.'),
         ];
       }
-      return $this->addLike($nid, $uid, $ip, $user_agent);
+      return $this->addLike($nid, $uid, $ip, $user_agent, $user_name);
     }
 
     if ($action === 'unlike') {
@@ -106,19 +110,17 @@ class LikeManager {
         return $this->removeLikeRecord((int) $existing->id, $nid);
       }
 
-      // Si no se encontró por IP/UID específico pero el usuario solicita unlike,
-      // intentamos eliminar un like anónimo reciente de este artículo si existe
-      if ($uid === 0) {
-        $any_like = $this->database->select('tc_article_likes', 'l')
+      // Si no se encontró registro exacto por (user_name + IP), intentar buscar por user_name o IP
+      if (!empty($user_name)) {
+        $by_name = $this->database->select('tc_article_likes', 'l')
           ->fields('l', ['id'])
           ->condition('l.nid', $nid)
-          ->condition('l.uid', 0)
-          ->orderBy('l.created', 'DESC')
+          ->condition('l.user_name', $user_name)
           ->range(0, 1)
           ->execute()
           ->fetchField();
-        if ($any_like) {
-          return $this->removeLikeRecord((int) $any_like, $nid);
+        if ($by_name) {
+          return $this->removeLikeRecord((int) $by_name, $nid);
         }
       }
 
@@ -138,19 +140,20 @@ class LikeManager {
       return $this->removeLikeRecord((int) $existing->id, $nid);
     }
 
-    return $this->addLike($nid, $uid, $ip, $user_agent);
+    return $this->addLike($nid, $uid, $ip, $user_agent, $user_name);
   }
 
   /**
-   * Registra un nuevo like en la tabla tc_article_likes y actualiza field_likes.
+   * Registra un nuevo like guardando user_name e IP.
    */
-  public function addLike(int $nid, int $uid = 0, string $ip = '', string $user_agent = ''): array {
+  public function addLike(int $nid, int $uid = 0, string $ip = '', string $user_agent = '', string $user_name = ''): array {
     $timestamp = $this->time->getRequestTime();
 
     $like_id = $this->database->insert('tc_article_likes')
       ->fields([
         'nid' => $nid,
         'uid' => $uid,
+        'user_name' => substr($user_name, 0, 128),
         'ip_address' => substr($ip, 0, 45),
         'user_agent' => substr($user_agent, 0, 255),
         'created' => $timestamp,
@@ -191,23 +194,34 @@ class LikeManager {
   }
 
   /**
-   * Verifica si un usuario o IP ya ha dado like a un artículo.
+   * Verifica si un usuario o combinación (user_name + IP) ya ha dado like a un artículo.
    */
-  public function hasUserLiked(int $nid, int $uid = 0, string $ip = ''): bool {
-    return $this->findExistingLike($nid, $uid, $ip) !== NULL;
+  public function hasUserLiked(int $nid, int $uid = 0, string $ip = '', string $user_name = ''): bool {
+    return $this->findExistingLike($nid, $uid, $ip, $user_name) !== NULL;
   }
 
   /**
-   * Busca un like existente para un artículo por usuario o IP.
+   * Busca un like existente para un artículo combinando user_name con IP.
    */
-  public function findExistingLike(int $nid, int $uid = 0, string $ip = ''): ?object {
+  public function findExistingLike(int $nid, int $uid = 0, string $ip = '', string $user_name = ''): ?object {
     $query = $this->database->select('tc_article_likes', 'l')
-      ->fields('l', ['id', 'nid', 'uid', 'ip_address', 'created'])
+      ->fields('l', ['id', 'nid', 'uid', 'user_name', 'ip_address', 'created'])
       ->condition('l.nid', $nid);
 
-    if ($uid > 0) {
+    // 1. Prioridad: combinación de nombre de usuario con IP
+    if (!empty($user_name) && !empty($ip)) {
+      $query->condition('l.user_name', $user_name)
+        ->condition('l.ip_address', $ip);
+    }
+    // 2. Por nombre de usuario
+    elseif (!empty($user_name)) {
+      $query->condition('l.user_name', $user_name);
+    }
+    // 3. Por ID de usuario autenticado
+    elseif ($uid > 0) {
       $query->condition('l.uid', $uid);
     }
+    // 4. Por IP anónima
     elseif (!empty($ip)) {
       $query->condition('l.uid', 0)
         ->condition('l.ip_address', $ip);
@@ -221,81 +235,21 @@ class LikeManager {
   }
 
   /**
-   * Obtiene el conteo total de likes de un artículo desde la tabla tc_article_likes.
+   * Obtiene todos los IDs de noticias que el usuario o combinación (user_name + IP) ha marcado con like.
    */
-  public function getTotalLikes(int $nid): int {
-    return (int) $this->database->select('tc_article_likes', 'l')
-      ->condition('l.nid', $nid)
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-  }
-
-  /**
-   * Obtiene el detalle de likes registrados para un artículo.
-   */
-  public function getLikesDetail(int $nid, int $limit = 50, int $offset = 0): array {
-    $query = $this->database->select('tc_article_likes', 'l')
-      ->fields('l', ['id', 'nid', 'uid', 'ip_address', 'user_agent', 'created'])
-      ->condition('l.nid', $nid)
-      ->orderBy('l.created', 'DESC')
-      ->range($offset, $limit);
-
-    $results = $query->execute()->fetchAll();
-
-    $user_storage = $this->entityTypeManager->getStorage('user');
-    $items = [];
-    foreach ($results as $row) {
-      $user_name = 'Anónimo';
-      if ((int) $row->uid > 0) {
-        $user = $user_storage->load((int) $row->uid);
-        if ($user) {
-          $user_name = $user->getDisplayName();
-        }
-      }
-
-      $items[] = [
-        'id' => (int) $row->id,
-        'nid' => (int) $row->nid,
-        'uid' => (int) $row->uid,
-        'user_name' => $user_name,
-        'ip_address' => $row->ip_address,
-        'user_agent' => $row->user_agent,
-        'created' => (int) $row->created,
-        'created_iso' => date('c', (int) $row->created),
-      ];
-    }
-
-    return $items;
-  }
-
-  /**
-   * Recalcula y actualiza el campo field_likes en el nodo de la noticia,
-   * e invalida las etiquetas de caché necesarias.
-   *
-   * @param int $nid
-   *   ID del nodo.
-   *
-   * @return int
-   *   Total de likes actualizado.
-   */
-  /**
-   * Obtiene todos los IDs de noticias que el usuario o IP ha marcado con like.
-   *
-   * @param int $uid
-   *   ID de usuario.
-   * @param string $ip
-   *   Dirección IP.
-   *
-   * @return int[]
-   *   Array con los IDs de los nodos con like.
-   */
-  public function getUserLikedNodeIds(int $uid = 0, string $ip = ''): array {
+  public function getUserLikedNodeIds(int $uid = 0, string $ip = '', string $user_name = ''): array {
     $query = $this->database->select('tc_article_likes', 'l')
       ->fields('l', ['nid'])
       ->distinct();
 
-    if ($uid > 0) {
+    if (!empty($user_name) && !empty($ip)) {
+      $query->condition('l.user_name', $user_name)
+        ->condition('l.ip_address', $ip);
+    }
+    elseif (!empty($user_name)) {
+      $query->condition('l.user_name', $user_name);
+    }
+    elseif ($uid > 0) {
       $query->condition('l.uid', $uid);
     }
     elseif (!empty($ip)) {
@@ -308,6 +262,55 @@ class LikeManager {
 
     $nids = $query->execute()->fetchCol();
     return array_map('intval', $nids);
+  }
+
+  /**
+   * Obtiene el detalle de likes registrados para un artículo.
+   */
+  public function getLikesDetail(int $nid, int $limit = 50, int $offset = 0): array {
+    $query = $this->database->select('tc_article_likes', 'l')
+      ->fields('l', ['id', 'nid', 'uid', 'user_name', 'ip_address', 'user_agent', 'created'])
+      ->condition('l.nid', $nid)
+      ->orderBy('l.created', 'DESC')
+      ->range($offset, $limit);
+
+    $results = $query->execute()->fetchAll();
+
+    $user_storage = $this->entityTypeManager->getStorage('user');
+    $items = [];
+    foreach ($results as $row) {
+      $display_name = !empty($row->user_name) ? $row->user_name : 'Anónimo';
+      if ((int) $row->uid > 0) {
+        $user = $user_storage->load((int) $row->uid);
+        if ($user) {
+          $display_name = $user->getDisplayName();
+        }
+      }
+
+      $items[] = [
+        'id' => (int) $row->id,
+        'nid' => (int) $row->nid,
+        'uid' => (int) $row->uid,
+        'user_name' => $display_name,
+        'ip_address' => $row->ip_address,
+        'user_agent' => $row->user_agent,
+        'created' => (int) $row->created,
+        'created_iso' => date('c', (int) $row->created),
+      ];
+    }
+
+    return $items;
+  }
+
+  /**
+   * Obtiene el conteo total de likes de un artículo desde la tabla tc_article_likes.
+   */
+  public function getTotalLikes(int $nid): int {
+    return (int) $this->database->select('tc_article_likes', 'l')
+      ->condition('l.nid', $nid)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
   }
 
   public function updateNodeLikes(int $nid): int {

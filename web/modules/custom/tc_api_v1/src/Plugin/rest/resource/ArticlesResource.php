@@ -215,7 +215,11 @@ class ArticlesResource extends ResourceBase {
         $xff = $request->headers->get('X-Forwarded-For');
         $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
         if (\Drupal::hasService('tc_api_v1.like_manager')) {
-          return \Drupal::service('tc_api_v1.like_manager')->hasUserLiked((int) $node->id(), $uid, $ip);
+          $user_name = trim($request->query->get('user_name') ?: ($request->query->get('username') ?: ''));
+          if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+            $user_name = $current_user->getDisplayName();
+          }
+          return \Drupal::service('tc_api_v1.like_manager')->hasUserLiked((int) $node->id(), $uid, $ip, $user_name);
         }
         return false;
       })(),

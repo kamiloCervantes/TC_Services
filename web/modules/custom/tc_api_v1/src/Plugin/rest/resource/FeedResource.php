@@ -169,7 +169,11 @@ class FeedResource extends ResourceBase {
     if (\Drupal::hasService('tc_api_v1.like_manager')) {
       /** @var \Drupal\tc_api_v1\Service\LikeManager $like_manager */
       $like_manager = \Drupal::service('tc_api_v1.like_manager');
-      $liked_nids = $like_manager->getUserLikedNodeIds($uid, $ip);
+      $user_name = trim($request->query->get('user_name') ?: ($request->query->get('username') ?: ''));
+      if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+        $user_name = $current_user->getDisplayName();
+      }
+      $liked_nids = $like_manager->getUserLikedNodeIds($uid, $ip, $user_name);
     }
 
     $data = [];
