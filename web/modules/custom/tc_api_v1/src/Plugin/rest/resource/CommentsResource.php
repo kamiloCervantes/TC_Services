@@ -50,12 +50,37 @@ class CommentsResource extends ResourceBase {
     }
 
     $data = [];
+    $database = \Drupal::database();
 
-    // Verificamos si tiene el campo comentarios y no está vacío
-    if ($node->hasField('field_comentarios') && !$node->get('field_comentarios')->isEmpty()) {
-      // Obtenemos los párrafos referenciados (comentarios)
+    // Consultamos los comentarios en la tabla personalizada tc_article_comments
+    if ($database->schema()->tableExists('tc_article_comments')) {
+      $query = $database->select('tc_article_comments', 'c');
+      $query->leftJoin('users_field_data', 'u', 'c.uid = u.uid');
+      $query->fields('c', ['id', 'nid', 'uid', 'message', 'created', 'ip_address', 'status']);
+      $query->addField('u', 'name', 'author_name');
+      $query->condition('c.nid', (int) $articleId);
+      $query->condition('c.status', 1);
+      $query->orderBy('c.created', 'ASC');
+      $results = $query->execute()->fetchAll();
+
+      $date_formatter = \Drupal::service('date.formatter');
+      foreach ($results as $row) {
+        $data[] = [
+          'id' => (int) $row->id,
+          'author' => !empty($row->author_name) ? $row->author_name : 'Usuario ' . $row->uid,
+          'avatar' => 'user-default-ud1',
+          'text' => $row->message,
+          'time' => 'Hace ' . $date_formatter->formatTimeDiffSince($row->created),
+          'created' => (int) $row->created,
+          'likes' => 0,
+          'liked' => false,
+        ];
+      }
+    }
+
+    // Si no hay comentarios en la tabla personalizada, verificamos el campo de párrafos existente
+    if (empty($data) && $node->hasField('field_comentarios') && !$node->get('field_comentarios')->isEmpty()) {
       $comments = $node->get('field_comentarios')->referencedEntities();
-      
       foreach ($comments as $comment) {
         $data[] = $this->formatComment($comment);
       }
@@ -97,15 +122,14 @@ class CommentsResource extends ResourceBase {
     if ($comment->hasField('field_fecha_creado') && !$comment->get('field_fecha_creado')->isEmpty()) {
       $timestamp = $comment->get('field_fecha_creado')->value;
       $date_formatter = \Drupal::service('date.formatter');
-      // Format as "Hace X" (formato relativo según Drupal)
       $time_formatted = 'Hace ' . $date_formatter->formatTimeDiffSince($timestamp);
     }
 
     return [
       'id' => (int) $comment->id(),
       'author' => $author,
-      'avatar' => '', // Se deja vacío ya que no hay campo definido para el avatar del invitado.
-      'text' => strip_tags($text), // Limpiamos HTML si el campo es de tipo text long con wysiwyg
+      'avatar' => 'user-default-ud1',
+      'text' => strip_tags($text),
       'time' => $time_formatted,
       'likes' => $likes,
       'liked' => false,

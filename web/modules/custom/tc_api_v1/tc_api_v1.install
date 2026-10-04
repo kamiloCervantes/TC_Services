@@ -1,0 +1,86 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the tc_api_v1 module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function tc_api_v1_schema() {
+  $schema['tc_article_comments'] = [
+    'description' => 'Almacena los comentarios de los usuarios en las noticias.',
+    'fields' => [
+      'id' => [
+        'description' => 'Clave primaria autoincremental del comentario.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'ID de la noticia (nodo) a la que pertenece el comentario.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'uid' => [
+        'description' => 'ID del usuario autor del comentario. No permitido valor nulo/vacío.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'message' => [
+        'description' => 'Texto del mensaje del comentario.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ],
+      'created' => [
+        'description' => 'Fecha y hora de creación en formato Unix timestamp.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'ip_address' => [
+        'description' => 'Dirección IP desde la cual se publicó el comentario.',
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'status' => [
+        'description' => 'Estado de publicación: 1 para publicado, 0 para moderado.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid_status_created' => ['nid', 'status', 'created'],
+      'uid' => ['uid'],
+      'created' => ['created'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Crea la tabla tc_article_comments en la base de datos para almacenar comentarios de noticias.
+ */
+function tc_api_v1_update_10001() {
+  $schema = tc_api_v1_schema();
+  $database = \Drupal::database();
+  $schema_manager = $database->schema();
+
+  if (!$schema_manager->tableExists('tc_article_comments')) {
+    $schema_manager->createTable('tc_article_comments', $schema['tc_article_comments']);
+    return \Drupal::translation()->translate('Tabla tc_article_comments creada exitosamente.');
+  }
+
+  return \Drupal::translation()->translate('La tabla tc_article_comments ya existe en la base de datos.');
+}

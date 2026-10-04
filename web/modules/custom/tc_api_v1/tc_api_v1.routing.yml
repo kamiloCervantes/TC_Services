@@ -1,0 +1,17 @@
+tc_api_v1.comments_get:
+  path: '/api/v1/articles/{articleId}/comments'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentsController::getComments'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+tc_api_v1.comments_post:
+  path: '/api/v1/articles/{articleId}/comments'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentsController::postComment'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
