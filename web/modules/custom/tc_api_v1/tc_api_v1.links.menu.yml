@@ -1,0 +1,6 @@
+tc_api_v1.admin_comments:
+  title: 'Comentarios de Noticias'
+  description: 'Administración, moderación y eliminación de comentarios de noticias.'
+  parent: system.admin_content
+  route_name: tc_api_v1.admin_comments
+  weight: 20

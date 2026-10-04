@@ -84,3 +84,82 @@ function tc_api_v1_update_10001() {
 
   return \Drupal::translation()->translate('La tabla tc_article_comments ya existe en la base de datos.');
 }
+
+/**
+ * Crea el campo Total comentarios (field_total_comentarios) en el tipo de contenido news.
+ */
+function tc_api_v1_update_10002() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+
+  // 1. Almacenamiento del campo (FieldStorageConfig)
+  $field_storage = \Drupal\field\Entity\FieldStorageConfig::loadByName('node', 'field_total_comentarios');
+  if (!$field_storage) {
+    $field_storage = \Drupal\field\Entity\FieldStorageConfig::create([
+      'field_name' => 'field_total_comentarios',
+      'entity_type' => 'node',
+      'type' => 'integer',
+      'cardinality' => 1,
+      'settings' => [
+        'unsigned' => TRUE,
+      ],
+    ]);
+    $field_storage->save();
+  }
+
+  // 2. Instancia del campo en el tipo de contenido news (FieldConfig)
+  $field = \Drupal\field\Entity\FieldConfig::loadByName('node', 'news', 'field_total_comentarios');
+  if (!$field) {
+    $field = \Drupal\field\Entity\FieldConfig::create([
+      'field_storage' => $field_storage,
+      'bundle' => 'news',
+      'label' => 'Total comentarios',
+      'description' => 'Total de comentarios registrados para esta noticia.',
+      'default_value' => [['value' => 0]],
+      'settings' => [
+        'min' => 0,
+      ],
+    ]);
+    $field->save();
+  }
+
+  // 3. Configurar formulario para edición
+  $form_display = $entity_type_manager->getStorage('entity_form_display')->load('node.news.default');
+  if ($form_display) {
+    $form_display->setComponent('field_total_comentarios', [
+      'type' => 'number',
+      'weight' => 20,
+    ])->save();
+  }
+
+  // 4. Configurar visualización
+  $view_display = $entity_type_manager->getStorage('entity_view_display')->load('node.news.default');
+  if ($view_display) {
+    $view_display->setComponent('field_total_comentarios', [
+      'type' => 'number_integer',
+      'label' => 'above',
+      'weight' => 20,
+    ])->save();
+  }
+
+  // 5. Inicializar conteo para nodos existentes si ya hay comentarios en la tabla
+  $database = \Drupal::database();
+  if ($database->schema()->tableExists('tc_article_comments')) {
+    $query = $database->select('tc_article_comments', 'c');
+    $query->fields('c', ['nid']);
+    $query->addExpression('COUNT(c.id)', 'total');
+    $query->condition('c.status', 1);
+    $query->groupBy('c.nid');
+    $results = $query->execute()->fetchAll();
+
+    $node_storage = $entity_type_manager->getStorage('node');
+    foreach ($results as $row) {
+      $node = $node_storage->load($row->nid);
+      if ($node && $node->bundle() === 'news' && $node->hasField('field_total_comentarios')) {
+        $node->set('field_total_comentarios', (int) $row->total);
+        $node->save();
+      }
+    }
+  }
+
+  return \Drupal::translation()->translate('Campo Total comentarios (field_total_comentarios) creado y configurado exitosamente.');
+}

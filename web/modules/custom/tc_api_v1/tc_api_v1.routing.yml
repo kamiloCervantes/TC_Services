@@ -15,3 +15,37 @@ tc_api_v1.comments_post:
     _access: 'TRUE'
   options:
     _auth: ['oauth2', 'cookie']
+
+tc_api_v1.comments_delete:
+  path: '/api/v1/comments/{commentId}'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentsController::deleteComment'
+  methods: [DELETE]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
+
+tc_api_v1.admin_comments:
+  path: '/admin/content/tc-comments'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\AdminCommentsController::listComments'
+    _title: 'Comentarios de Noticias'
+  requirements:
+    _permission: 'access administration pages'
+
+tc_api_v1.admin_comment_edit:
+  path: '/admin/content/tc-comments/{id}/edit'
+  defaults:
+    _form: '\Drupal\tc_api_v1\Form\CommentEditForm'
+    _title: 'Editar Comentario'
+  requirements:
+    _permission: 'access administration pages'
+
+tc_api_v1.admin_comment_delete:
+  path: '/admin/content/tc-comments/{id}/delete'
+  defaults:
+    _form: '\Drupal\tc_api_v1\Form\CommentDeleteForm'
+    _title: 'Eliminar Comentario'
+  requirements:
+    _permission: 'access administration pages'

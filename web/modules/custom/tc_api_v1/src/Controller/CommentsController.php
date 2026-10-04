@@ -2,10 +2,10 @@
 
 namespace Drupal\tc_api_v1\Controller;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Controller for retrieving and creating news article comments.
+ * Controller for retrieving, creating, and deleting news article comments.
  */
 class CommentsController extends ControllerBase {
 
@@ -211,6 +211,7 @@ class CommentsController extends ControllerBase {
     $timestamp = $this->time->getRequestTime();
 
     try {
+      // 1. Guardar el nuevo comentario en la tabla tc_article_comments
       $comment_id = $this->database->insert('tc_article_comments')
         ->fields([
           'nid' => $nid,
@@ -221,6 +222,9 @@ class CommentsController extends ControllerBase {
           'status' => 1,
         ])
         ->execute();
+
+      // 2. Recalcular y actualizar el contador en el nodo de la noticia
+      $total_comments = self::updateNodeCommentCount($nid, $this->database, $this->entityTypeManager());
 
       $author_name = $user->getDisplayName();
 
@@ -243,6 +247,7 @@ class CommentsController extends ControllerBase {
         'status' => 'success',
         'message' => $this->t('Comentario publicado exitosamente.'),
         'comment' => $formatted_comment,
+        'total_comments' => $total_comments,
         'id' => (int) $comment_id,
         'author' => $author_name,
         'avatar' => 'user-default-ud1',
@@ -263,6 +268,130 @@ class CommentsController extends ControllerBase {
         'message' => $this->t('Ocurrió un error al guardar el comentario en la base de datos.'),
       ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+  }
+
+  /**
+   * Elimina un comentario de una noticia y actualiza el contador en el nodo.
+   *
+   * DELETE /api/v1/comments/{commentId}
+   *
+   * @param int|string $commentId
+   *   El ID del comentario.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   La solicitud HTTP.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   */
+  public function deleteComment($commentId, Request $request): JsonResponse {
+    $cid = (int) $commentId;
+    if ($cid <= 0) {
+      return new JsonResponse([
+        'status' => 'error',
+        'message' => $this->t('ID de comentario inválido.'),
+      ], Response::HTTP_BAD_REQUEST);
+    }
+
+    // Buscar el comentario existente
+    $comment = $this->database->select('tc_article_comments', 'c')
+      ->fields('c', ['id', 'nid', 'uid', 'status'])
+      ->condition('c.id', $cid)
+      ->execute()
+      ->fetchObject();
+
+    if (!$comment) {
+      return new JsonResponse([
+        'status' => 'error',
+        'message' => $this->t('El comentario no existe.'),
+      ], Response::HTTP_NOT_FOUND);
+    }
+
+    // Validar permisos: usuario autenticado propietario o administrador
+    $current_user = $this->currentUser();
+    $is_admin = $current_user && $current_user->hasPermission('access administration pages');
+    $is_owner = $current_user && ((int) $current_user->id() === (int) $comment->uid);
+
+    $request_uid = (int) ($request->query->get('uid') ?: $request->request->get('uid'));
+    if (!$is_admin && !$is_owner) {
+      if ($request_uid > 0 && $request_uid === (int) $comment->uid) {
+        $is_owner = TRUE;
+      }
+    }
+
+    if (!$is_admin && !$is_owner) {
+      return new JsonResponse([
+        'status' => 'error',
+        'message' => $this->t('No tienes permisos para eliminar este comentario.'),
+      ], Response::HTTP_FORBIDDEN);
+    }
+
+    try {
+      // Eliminar el comentario de la base de datos
+      $this->database->delete('tc_article_comments')
+        ->condition('id', $cid)
+        ->execute();
+
+      // Recalcular y actualizar el contador en el nodo de la noticia
+      $total_comments = self::updateNodeCommentCount((int) $comment->nid, $this->database, $this->entityTypeManager());
+
+      return new JsonResponse([
+        'status' => 'success',
+        'message' => $this->t('Comentario eliminado exitosamente.'),
+        'comment_id' => $cid,
+        'nid' => (int) $comment->nid,
+        'total_comments' => $total_comments,
+      ], Response::HTTP_OK);
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('tc_api_v1')->error('Error al eliminar comentario @cid: @msg', [
+        '@cid' => $cid,
+        '@msg' => $e->getMessage(),
+      ]);
+
+      return new JsonResponse([
+        'status' => 'error',
+        'message' => $this->t('Ocurrió un error al eliminar el comentario.'),
+      ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Recalcula y actualiza el campo field_total_comentarios en el nodo de la noticia.
+   *
+   * @param int $nid
+   *   El ID del nodo.
+   * @param \Drupal\Core\Database\Connection $database
+   *   La conexión a la base de datos.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   El gestor de entidades.
+   *
+   * @return int
+   *   El total de comentarios aprobados.
+   */
+  public static function updateNodeCommentCount(int $nid, Connection $database, $entity_type_manager): int {
+    $total_comments = (int) $database->select('tc_article_comments', 'c')
+      ->condition('c.nid', $nid)
+      ->condition('c.status', 1)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    $node_storage = $entity_type_manager->getStorage('node');
+    $node_to_update = $node_storage->load($nid);
+    if ($node_to_update) {
+      $updated = FALSE;
+      foreach (['field_total_comentarios', 'field_total_comments', 'field_comentarios_total'] as $field_name) {
+        if ($node_to_update->hasField($field_name)) {
+          $node_to_update->set($field_name, $total_comments);
+          $updated = TRUE;
+          break;
+        }
+      }
+      if ($updated) {
+        $node_to_update->save();
+      }
+    }
+
+    return $total_comments;
   }
 
 }

@@ -184,7 +184,7 @@ class ArticlesResource extends ResourceBase {
       'imgH' => $imgH,
       'timestamp' => $timestamp_formatted,
       'likes' => !$node->get('field_likes')->isEmpty() ? (int) $node->get('field_likes')->value : 0,
-      'comments' => $node->get('field_comentarios')->count(),
+      'comments' => $node->hasField('field_total_comentarios') && !$node->get('field_total_comentarios')->isEmpty() ? (int) $node->get('field_total_comentarios')->value : ($node->hasField('field_comentarios') ? $node->get('field_comentarios')->count() : 0),
       'views' => !$node->get('field_visualizaciones')->isEmpty() ? (int) $node->get('field_visualizaciones')->value : 0,
       'category' => $category,
       'boards' => [1], // Static for now as it's not defined in fields
