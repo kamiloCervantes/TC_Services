@@ -221,10 +221,14 @@ class LikeManager {
     elseif ($uid > 0) {
       $query->condition('l.uid', $uid);
     }
-    // 4. Por IP anónima
+    // 4. Por IP anónima (únicamente registros anónimos sin nombre de usuario)
     elseif (!empty($ip)) {
       $query->condition('l.uid', 0)
         ->condition('l.ip_address', $ip);
+      $orGroup = $query->orConditionGroup()
+        ->condition('l.user_name', '')
+        ->isNull('l.user_name');
+      $query->condition($orGroup);
     }
     else {
       return NULL;
@@ -242,19 +246,27 @@ class LikeManager {
       ->fields('l', ['nid'])
       ->distinct();
 
+    // 1. Coincidencia por user_name e IP
     if (!empty($user_name) && !empty($ip)) {
       $query->condition('l.user_name', $user_name)
         ->condition('l.ip_address', $ip);
     }
+    // 2. Por user_name
     elseif (!empty($user_name)) {
       $query->condition('l.user_name', $user_name);
     }
+    // 3. Por usuario autenticado
     elseif ($uid > 0) {
       $query->condition('l.uid', $uid);
     }
+    // 4. Por IP anónima (únicamente registros anónimos sin nombre de usuario)
     elseif (!empty($ip)) {
       $query->condition('l.uid', 0)
         ->condition('l.ip_address', $ip);
+      $orGroup = $query->orConditionGroup()
+        ->condition('l.user_name', '')
+        ->isNull('l.user_name');
+      $query->condition($orGroup);
     }
     else {
       return [];

@@ -127,6 +127,74 @@ function tc_api_v1_schema() {
     ],
   ];
 
+  $schema['tc_comment_likes'] = [
+    'description' => 'Almacena el detalle de los likes en comentarios de noticias combinando IP y usuario.',
+    'fields' => [
+      'id' => [
+        'description' => 'Clave primaria autoincremental.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'cid' => [
+        'description' => 'ID del comentario en tc_article_comments.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'nid' => [
+        'description' => 'ID de la noticia asociada.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'uid' => [
+        'description' => 'ID del usuario autenticado (0 si es anónimo).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'user_name' => [
+        'description' => 'Nombre del usuario o identificador de cliente.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'ip_address' => [
+        'description' => 'Dirección IP del cliente.',
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'user_agent' => [
+        'description' => 'User agent del navegador o cliente.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'created' => [
+        'description' => 'Timestamp de cuando se dio el like al comentario.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'cid' => ['cid'],
+      'cid_user_ip' => ['cid', 'user_name', 'ip_address'],
+      'nid' => ['nid'],
+      'uid' => ['uid'],
+      'ip_address' => ['ip_address'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -269,4 +337,32 @@ function tc_api_v1_update_10004() {
   }
 
   return \Drupal::translation()->translate('El campo user_name ya existe.');
+}
+
+
+/**
+ * Crea la tabla tc_comment_likes y agrega el campo likes a tc_article_comments.
+ */
+function tc_api_v1_update_10005() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  $module_schema = tc_api_v1_schema();
+
+  // 1. Crear tabla tc_comment_likes si no existe
+  if (!$schema->tableExists('tc_comment_likes')) {
+    $schema->createTable('tc_comment_likes', $module_schema['tc_comment_likes']);
+  }
+
+  // 2. Agregar campo likes a tc_article_comments si no existe
+  if ($schema->tableExists('tc_article_comments') && !$schema->fieldExists('tc_article_comments', 'likes')) {
+    $schema->addField('tc_article_comments', 'likes', [
+      'description' => 'Total de likes que ha recibido el comentario.',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+    ]);
+  }
+
+  return \Drupal::translation()->translate('Tabla tc_comment_likes y campo likes configurados exitosamente.');
 }

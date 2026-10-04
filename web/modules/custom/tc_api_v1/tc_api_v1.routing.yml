@@ -87,3 +87,31 @@ tc_api_v1.user_likes_get:
     _access: 'TRUE'
   options:
     _auth: ['oauth2', 'cookie']
+
+tc_api_v1.comment_likes_get:
+  path: '/api/v1/comments/{commentId}/likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentLikesController::getLikes'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+tc_api_v1.comment_likes_post:
+  path: '/api/v1/comments/{commentId}/likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentLikesController::toggleLike'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
+
+tc_api_v1.user_comment_likes_get:
+  path: '/api/v1/user/comment-likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\CommentLikesController::getUserCommentLikes'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']

@@ -93,7 +93,11 @@ class CommentsController extends ControllerBase {
       // Consultar los comentarios en la tabla personalizada tc_article_comments
       $query = $this->database->select('tc_article_comments', 'c');
       $query->leftJoin('users_field_data', 'u', 'c.uid = u.uid');
-      $query->fields('c', ['id', 'nid', 'uid', 'message', 'created', 'ip_address', 'status']);
+      $fields_to_select = ['id', 'nid', 'uid', 'message', 'created', 'ip_address', 'status'];
+      if ($this->database->schema()->fieldExists('tc_article_comments', 'likes')) {
+        $fields_to_select[] = 'likes';
+      }
+      $query->fields('c', $fields_to_select);
       $query->addField('u', 'name', 'author_name');
       $query->condition('c.nid', $nid);
       $query->condition('c.status', 1);
@@ -102,6 +106,27 @@ class CommentsController extends ControllerBase {
 
       $results = $query->execute()->fetchAll();
       $comments = [];
+
+      // Extraer datos de identidad para consultar likes del usuario en estos comentarios
+      $current_user = $this->currentUser();
+      $uid = $current_user && $current_user->isAuthenticated() ? (int) $current_user->id() : 0;
+      if ($uid === 0 && $request->query->has('uid')) {
+        $uid = (int) $request->query->get('uid');
+      }
+      $xff = $request->headers->get('X-Forwarded-For');
+      $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
+      $user_name = trim($request->query->get('user_name') ?: ($request->query->get('username') ?: ''));
+      if (empty($user_name) && $current_user && $current_user->isAuthenticated()) {
+        $user_name = $current_user->getDisplayName();
+      }
+
+      $cids = array_map(function($r) { return (int) $r->id; }, $results);
+      $liked_cids = [];
+      if (\Drupal::hasService('tc_api_v1.comment_like_manager') && !empty($cids)) {
+        /** @var \Drupal\tc_api_v1\Service\CommentLikeManager $comment_like_mgr */
+        $comment_like_mgr = \Drupal::service('tc_api_v1.comment_like_manager');
+        $liked_cids = $comment_like_mgr->getUserLikedCommentIds($cids, $uid, $ip, $user_name);
+      }
 
       foreach ($results as $row) {
         $comments[] = [
@@ -114,8 +139,8 @@ class CommentsController extends ControllerBase {
           'time' => 'Hace ' . $this->dateFormatter->formatTimeDiffSince($row->created),
           'created' => (int) $row->created,
           'created_iso' => date('c', $row->created),
-          'likes' => 0,
-          'liked' => false,
+          'likes' => isset($row->likes) ? (int) $row->likes : 0,
+          'liked' => in_array((int) $row->id, $liked_cids, TRUE),
         ];
       }
 
