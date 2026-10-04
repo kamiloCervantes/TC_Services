@@ -89,7 +89,15 @@ class ArticlesResource extends ResourceBase {
       $data[] = $this->formatArticle($node);
     }
 
-    return new ResourceResponse($data);
+    if (\Drupal::hasService('page_cache_kill_switch')) {
+      \Drupal::service('page_cache_kill_switch')->trigger();
+    }
+    $response = new ResourceResponse($data);
+    $response->addCacheableDependency(['#cache' => ['max-age' => 0]]);
+    $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    $response->headers->set('Pragma', 'no-cache');
+    $response->headers->set('Expires', '0');
+    return $response;
   }
 
   /**
@@ -111,7 +119,15 @@ class ArticlesResource extends ResourceBase {
       throw new NotFoundHttpException('News article not found.');
     }
 
-    return new ResourceResponse($this->formatArticle($node));
+    if (\Drupal::hasService('page_cache_kill_switch')) {
+      \Drupal::service('page_cache_kill_switch')->trigger();
+    }
+    $response = new ResourceResponse($this->formatArticle($node));
+    $response->addCacheableDependency(['#cache' => ['max-age' => 0]]);
+    $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    $response->headers->set('Pragma', 'no-cache');
+    $response->headers->set('Expires', '0');
+    return $response;
   }
 
   /**
@@ -184,6 +200,7 @@ class ArticlesResource extends ResourceBase {
       'imgH' => $imgH,
       'timestamp' => $timestamp_formatted,
       'likes' => !$node->get('field_likes')->isEmpty() ? (int) $node->get('field_likes')->value : 0,
+      'total_comentarios' => $node->hasField('field_total_comentarios') && !$node->get('field_total_comentarios')->isEmpty() ? (int) $node->get('field_total_comentarios')->value : ($node->hasField('field_comentarios') ? $node->get('field_comentarios')->count() : 0),
       'comments' => $node->hasField('field_total_comentarios') && !$node->get('field_total_comentarios')->isEmpty() ? (int) $node->get('field_total_comentarios')->value : ($node->hasField('field_comentarios') ? $node->get('field_comentarios')->count() : 0),
       'views' => !$node->get('field_visualizaciones')->isEmpty() ? (int) $node->get('field_visualizaciones')->value : 0,
       'category' => $category,

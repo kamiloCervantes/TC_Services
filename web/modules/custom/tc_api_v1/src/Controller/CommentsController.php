@@ -119,7 +119,14 @@ class CommentsController extends ControllerBase {
         ];
       }
 
-      return new JsonResponse($comments, Response::HTTP_OK);
+      if (\Drupal::hasService('page_cache_kill_switch')) {
+        \Drupal::service('page_cache_kill_switch')->trigger();
+      }
+      $response = new JsonResponse($comments, Response::HTTP_OK);
+      $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+      $response->headers->set('Pragma', 'no-cache');
+      $response->headers->set('Expires', '0');
+      return $response;
     }
     catch (\Throwable $e) {
       \Drupal::logger('tc_api_v1')->error('Error al obtener comentarios de noticia @nid: @msg', [
@@ -390,6 +397,13 @@ class CommentsController extends ControllerBase {
         $node_to_update->save();
       }
     }
+
+    \Drupal\Core\Cache\Cache::invalidateTags([
+      'node:' . $nid,
+      'node_list',
+      'node_list:news',
+      'rendered',
+    ]);
 
     return $total_comments;
   }

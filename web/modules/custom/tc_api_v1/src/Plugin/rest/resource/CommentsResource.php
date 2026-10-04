@@ -87,7 +87,15 @@ class CommentsResource extends ResourceBase {
       }
     }
 
-    return new ResourceResponse($data);
+    if (\Drupal::hasService('page_cache_kill_switch')) {
+      \Drupal::service('page_cache_kill_switch')->trigger();
+    }
+    $response = new ResourceResponse($data);
+    $response->addCacheableDependency(['#cache' => ['max-age' => 0]]);
+    $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    $response->headers->set('Pragma', 'no-cache');
+    $response->headers->set('Expires', '0');
+    return $response;
   }
 
   /**
