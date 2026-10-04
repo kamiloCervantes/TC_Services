@@ -156,9 +156,25 @@ class FeedResource extends ResourceBase {
 
     $nodes = $node_storage->loadMultiple($nids);
 
+    $current_user = \Drupal::currentUser();
+    $uid = $current_user && $current_user->isAuthenticated() ? (int) $current_user->id() : 0;
+    $request = \Drupal::request();
+    if ($uid === 0 && $request->query->has('uid')) {
+      $uid = (int) $request->query->get('uid');
+    }
+    $xff = $request->headers->get('X-Forwarded-For');
+    $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
+
+    $liked_nids = [];
+    if (\Drupal::hasService('tc_api_v1.like_manager')) {
+      /** @var \Drupal\tc_api_v1\Service\LikeManager $like_manager */
+      $like_manager = \Drupal::service('tc_api_v1.like_manager');
+      $liked_nids = $like_manager->getUserLikedNodeIds($uid, $ip);
+    }
+
     $data = [];
     foreach ($nodes as $node) {
-      $data[] = $this->formatArticle($node);
+      $data[] = $this->formatArticle($node, $liked_nids);
     }
 
     return $data;
@@ -200,7 +216,7 @@ class FeedResource extends ResourceBase {
    * @return array
    *   Formatted article array with a 'type' key set to 'article'.
    */
-  protected function formatArticle(Node $node): array {
+  protected function formatArticle(Node $node, array $liked_nids = []): array {
     // Author data.
     $author = $node->getOwner();
     $author_name = 'Desconocido';
@@ -263,7 +279,7 @@ class FeedResource extends ResourceBase {
       'views'     => !$node->get('field_visualizaciones')->isEmpty() ? (int) $node->get('field_visualizaciones')->value : 0,
       'category'  => $category,
       'boards'    => [1],
-      'liked'     => false,
+      'liked'     => in_array((int) $node->id(), $liked_nids, TRUE),
     ];
   }
 

@@ -279,6 +279,37 @@ class LikeManager {
    * @return int
    *   Total de likes actualizado.
    */
+  /**
+   * Obtiene todos los IDs de noticias que el usuario o IP ha marcado con like.
+   *
+   * @param int $uid
+   *   ID de usuario.
+   * @param string $ip
+   *   Dirección IP.
+   *
+   * @return int[]
+   *   Array con los IDs de los nodos con like.
+   */
+  public function getUserLikedNodeIds(int $uid = 0, string $ip = ''): array {
+    $query = $this->database->select('tc_article_likes', 'l')
+      ->fields('l', ['nid'])
+      ->distinct();
+
+    if ($uid > 0) {
+      $query->condition('l.uid', $uid);
+    }
+    elseif (!empty($ip)) {
+      $query->condition('l.uid', 0)
+        ->condition('l.ip_address', $ip);
+    }
+    else {
+      return [];
+    }
+
+    $nids = $query->execute()->fetchCol();
+    return array_map('intval', $nids);
+  }
+
   public function updateNodeLikes(int $nid): int {
     $total = $this->getTotalLikes($nid);
 

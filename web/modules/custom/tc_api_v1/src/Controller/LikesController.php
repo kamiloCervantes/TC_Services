@@ -84,7 +84,8 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
       $uid = (int) ($data['uid'] ?? $data['user_id']);
     }
 
-    $ip = !empty($data['ip']) ? trim($data['ip']) : ($request->getClientIp() ?: '');
+        $xff = $request->headers->get('X-Forwarded-For');
+    $ip = !empty($data['ip']) ? trim($data['ip']) : ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
     $user_agent = $request->headers->get('User-Agent') ?: '';
 
     try {
@@ -171,6 +172,44 @@ class LikesController extends ControllerBase implements ContainerInjectionInterf
     }
 
     $response = new JsonResponse($responseData, Response::HTTP_OK);
+    $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    $response->headers->set('Pragma', 'no-cache');
+    $response->headers->set('Expires', '0');
+    return $response;
+  }
+
+  /**
+   * Retorna los IDs de artículos a los que el usuario actual o IP ha dado like.
+   *
+   * GET /api/v1/user/likes
+   */
+  public function getUserLikes(Request $request): JsonResponse {
+    $uid = 0;
+    $current_user = $this->currentUser();
+    if ($current_user && $current_user->isAuthenticated()) {
+      $uid = (int) $current_user->id();
+    }
+    elseif ($request->query->has('uid')) {
+      $uid = (int) $request->query->get('uid');
+    }
+
+        $xff = $request->headers->get('X-Forwarded-For');
+    $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
+
+    $nids = $this->likeManager->getUserLikedNodeIds($uid, $ip);
+
+    if (\Drupal::hasService('page_cache_kill_switch')) {
+      \Drupal::service('page_cache_kill_switch')->trigger();
+    }
+
+    $response = new JsonResponse([
+      'status' => 'success',
+      'uid' => $uid,
+      'ip' => $ip,
+      'liked_nids' => $nids,
+      'total' => count($nids),
+    ], Response::HTTP_OK);
+
     $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     $response->headers->set('Pragma', 'no-cache');
     $response->headers->set('Expires', '0');

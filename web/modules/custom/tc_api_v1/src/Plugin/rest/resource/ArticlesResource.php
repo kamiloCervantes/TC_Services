@@ -205,7 +205,20 @@ class ArticlesResource extends ResourceBase {
       'views' => !$node->get('field_visualizaciones')->isEmpty() ? (int) $node->get('field_visualizaciones')->value : 0,
       'category' => $category,
       'boards' => [1], // Static for now as it's not defined in fields
-      'liked' => false,
+      'liked' => (function() use ($node) {
+        $current_user = \Drupal::currentUser();
+        $uid = $current_user && $current_user->isAuthenticated() ? (int) $current_user->id() : 0;
+        $request = \Drupal::request();
+        if ($uid === 0 && $request->query->has('uid')) {
+          $uid = (int) $request->query->get('uid');
+        }
+        $xff = $request->headers->get('X-Forwarded-For');
+        $ip = $request->query->get('ip') ?: ($xff ? trim(explode(',', $xff)[0]) : ($request->getClientIp() ?: ''));
+        if (\Drupal::hasService('tc_api_v1.like_manager')) {
+          return \Drupal::service('tc_api_v1.like_manager')->hasUserLiked((int) $node->id(), $uid, $ip);
+        }
+        return false;
+      })(),
     ];
   }
 }

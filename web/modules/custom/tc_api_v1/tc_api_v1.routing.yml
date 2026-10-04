@@ -77,3 +77,13 @@ tc_api_v1.admin_comment_delete:
     _title: 'Eliminar Comentario'
   requirements:
     _permission: 'access administration pages'
+
+tc_api_v1.user_likes_get:
+  path: '/api/v1/user/likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\LikesController::getUserLikes'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
