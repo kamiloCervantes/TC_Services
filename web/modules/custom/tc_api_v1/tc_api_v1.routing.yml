@@ -26,6 +26,34 @@ tc_api_v1.comments_delete:
   options:
     _auth: ['oauth2', 'cookie']
 
+tc_api_v1.article_likes_get:
+  path: '/api/v1/articles/{articleId}/likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\LikesController::getLikes'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+tc_api_v1.article_likes_post:
+  path: '/api/v1/articles/{articleId}/likes'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\LikesController::toggleLike'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
+
+tc_api_v1.article_like_alias_post:
+  path: '/api/v1/articles/{articleId}/like'
+  defaults:
+    _controller: '\Drupal\tc_api_v1\Controller\LikesController::toggleLike'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    _auth: ['oauth2', 'cookie']
+
 tc_api_v1.admin_comments:
   path: '/admin/content/tc-comments'
   defaults:

@@ -66,6 +66,59 @@ function tc_api_v1_schema() {
     ],
   ];
 
+  $schema['tc_article_likes'] = [
+    'description' => 'Almacena el detalle de los likes de los usuarios en las noticias.',
+    'fields' => [
+      'id' => [
+        'description' => 'Clave primaria autoincremental del like.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'nid' => [
+        'description' => 'ID de la noticia (nodo) a la que pertenece el like.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'uid' => [
+        'description' => 'ID del usuario que dio like (0 para usuarios anónimos o no autenticados).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'ip_address' => [
+        'description' => 'Dirección IP desde la cual se dio el like.',
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'user_agent' => [
+        'description' => 'User Agent del navegador o cliente.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ],
+      'created' => [
+        'description' => 'Fecha y hora de creación en formato Unix timestamp.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'nid' => ['nid'],
+      'nid_uid' => ['nid', 'uid'],
+      'nid_ip' => ['nid', 'ip_address'],
+      'created' => ['created'],
+    ],
+  ];
+
   return $schema;
 }
 
@@ -162,4 +215,20 @@ function tc_api_v1_update_10002() {
   }
 
   return \Drupal::translation()->translate('Campo Total comentarios (field_total_comentarios) creado y configurado exitosamente.');
+}
+
+/**
+ * Crea la tabla tc_article_likes en la base de datos para almacenar el detalle de los likes.
+ */
+function tc_api_v1_update_10003() {
+  $schema = tc_api_v1_schema();
+  $database = \Drupal::database();
+  $schema_manager = $database->schema();
+
+  if (!$schema_manager->tableExists('tc_article_likes')) {
+    $schema_manager->createTable('tc_article_likes', $schema['tc_article_likes']);
+    return \Drupal::translation()->translate('Tabla tc_article_likes creada exitosamente.');
+  }
+
+  return \Drupal::translation()->translate('La tabla tc_article_likes ya existe en la base de datos.');
 }

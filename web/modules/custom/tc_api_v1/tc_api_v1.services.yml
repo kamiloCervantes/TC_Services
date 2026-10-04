@@ -1,0 +1,4 @@
+services:
+  tc_api_v1.like_manager:
+    class: Drupal\tc_api_v1\Service\LikeManager
+    arguments: ['@database', '@entity_type.manager', '@current_user', '@datetime.time']
