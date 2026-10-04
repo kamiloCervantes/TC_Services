@@ -98,6 +98,7 @@ class OtpManager {
       'name' => $name,
       'otp_code' => $code,
       'expires_minutes' => (int) (self::OTP_EXPIRATION_SECONDS / 60),
+      'purpose' => $purpose,
     ];
 
     $result = $this->mailManager->mail(

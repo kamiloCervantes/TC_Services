@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Código de Verificación - {{ site_name }}</title>
+  <title>{% if purpose == 'password_reset' %}Restablecer Contraseña{% else %}Código de Verificación{% endif %} - {{ site_name }}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f6f8; padding: 40px 10px;">
@@ -24,9 +24,15 @@
               <h2 style="font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 12px;">
                 ¡Hola {{ recipient_name }}!
               </h2>
+              {% if purpose == 'password_reset' %}
+              <p style="font-size: 15px; margin-bottom: 24px;">
+                Hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Ingresa el siguiente código de verificación de 6 dígitos para continuar:
+              </p>
+              {% else %}
               <p style="font-size: 15px; margin-bottom: 24px;">
                 Gracias por registrarte. Para completar la activación de tu cuenta, ingresa el siguiente código de verificación de 6 dígitos en la aplicación:
               </p>
+              {% endif %}
 
               <!-- OTP Box -->
               <div style="text-align: center; margin: 32px 0;">
@@ -38,9 +44,15 @@
               <p style="font-size: 14px; color: #64748b; margin-bottom: 8px; text-align: center;">
                 ⏳ Este código expira en <strong>{{ expires_minutes }} minutos</strong>.
               </p>
+              {% if purpose == 'password_reset' %}
+              <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-top: 24px; margin-bottom: 0;">
+                Si tú no solicitaste este cambio, puedes ignorar este correo de manera segura. Tu contraseña actual permanecerá intacta.
+              </p>
+              {% else %}
               <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-top: 24px; margin-bottom: 0;">
                 Si tú no solicitaste este registro, puedes ignorar este correo de manera segura.
               </p>
+              {% endif %}
             </td>
           </tr>
           <!-- Footer -->

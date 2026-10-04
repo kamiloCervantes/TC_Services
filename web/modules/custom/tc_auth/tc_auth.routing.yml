@@ -22,6 +22,22 @@ tc_auth.resend_otp:
   requirements:
     _access: 'TRUE'
 
+tc_auth.forgot_password:
+  path: '/api/v1/auth/forgot-password'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\PasswordResetController::forgotPassword'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+tc_auth.reset_password:
+  path: '/api/v1/auth/reset-password'
+  defaults:
+    _controller: '\Drupal\tc_auth\Controller\PasswordResetController::resetPassword'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
 tc_auth.user_me:
   path: '/api/v1/user/me'
   defaults:
