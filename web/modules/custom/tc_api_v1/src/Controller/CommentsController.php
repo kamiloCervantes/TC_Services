@@ -97,7 +97,8 @@ class CommentsController extends ControllerBase {
       $query->addField('u', 'name', 'author_name');
       $query->condition('c.nid', $nid);
       $query->condition('c.status', 1);
-      $query->orderBy('c.created', 'ASC');
+      $query->orderBy('c.created', 'DESC');
+      $query->orderBy('c.id', 'DESC');
 
       $results = $query->execute()->fetchAll();
       $comments = [];
