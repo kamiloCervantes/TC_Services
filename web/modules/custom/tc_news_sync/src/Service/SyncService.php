@@ -248,7 +248,7 @@ class SyncService
         'field_credito_imagen_destacada' => [
           'value' => 'Alcaldía de Montería',
         ],
-        'status' => 1,
+        'status' => 0, // Borrador
       ];
 
       if (!empty($radicado_en)) {
@@ -462,7 +462,7 @@ class SyncService
         'field_credito_imagen_destacada' => [
           'value' => 'Gobernación de Córdoba',
         ],
-        'status' => 1,
+        'status' => 0, // Borrador
       ];
 
       if (!empty($radicado_en)) {
@@ -663,7 +663,7 @@ class SyncService
         'field_credito_imagen_destacada' => [
           'value' => 'URRÁ S.A. E.S.P.',
         ],
-        'status' => 1,
+        'status' => 0, // Borrador
       ];
 
       if (!empty($radicado_en)) {
@@ -932,7 +932,7 @@ class SyncService
         'field_credito_imagen_destacada' => [
           'value' => 'Universidad de Córdoba',
         ],
-        'status' => 1,
+        'status' => 0, // Borrador
       ];
 
       if (!empty($radicado_en)) {

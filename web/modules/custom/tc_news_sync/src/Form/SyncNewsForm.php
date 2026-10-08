@@ -54,7 +54,7 @@ class SyncNewsForm extends FormBase
         ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchUnicordobaOperation', []],
         ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCordobaGobOperation', []],
         ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchEpmOperation', []],
-        //['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCorantioquiaOperation', []],
+        ['\Drupal\tc_news_sync\Form\SyncNewsForm::fetchCorantioquiaOperation', []],
       ],
       'finished' => '\Drupal\tc_news_sync\Form\SyncNewsForm::batchFinished',
     ];
