@@ -185,7 +185,8 @@ class FeedResource extends ResourceBase {
   }
 
   /**
-   * Retrieves all active sponsored posts ordered by position.
+   * Retrieves all active sponsored posts ordered by position and creation date,
+   * filtered by current active date range.
    *
    * @return array
    *   Array of formatted sponsored post data.
@@ -197,14 +198,64 @@ class FeedResource extends ResourceBase {
       ->condition('type', 'sponsored_posts')
       ->condition('status', 1)
       ->condition('field_visible', 1)
-      ->sort('field_posicion', 'ASC')
       ->accessCheck(TRUE)
       ->execute();
 
     $nodes = $node_storage->loadMultiple($nids);
 
-    $data = [];
+    $timezone_name = \Drupal::config('system.date')->get('timezone.default') ?: 'America/Bogota';
+    $today = (new \DateTime('now', new \DateTimeZone($timezone_name)))->format('Y-m-d');
+
+    $filtered_nodes = [];
     foreach ($nodes as $node) {
+      // Excluir si la fecha actual no coincide con el rango entre field_fecha_inicio y field_fecha_fin.
+      if (!$node->get('field_fecha_inicio')->isEmpty()) {
+        $start_date = substr($node->get('field_fecha_inicio')->value, 0, 10);
+        if ($start_date > $today) {
+          continue;
+        }
+      }
+      if (!$node->get('field_fecha_fin')->isEmpty()) {
+        $end_date = substr($node->get('field_fecha_fin')->value, 0, 10);
+        if ($end_date < $today) {
+          continue;
+        }
+      }
+      $filtered_nodes[] = $node;
+    }
+
+    // Ordenar de acuerdo al campo field_posicion (menor posición más arriba).
+    // Para los que no tengan posición definida, ordenarlos por fecha de creación (más recientes primero)
+    // después de los que sí tengan valor numérico en field_posicion.
+    usort($filtered_nodes, function (Node $a, Node $b) {
+      $has_pos_a = !$a->get('field_posicion')->isEmpty() && is_numeric($a->get('field_posicion')->value);
+      $has_pos_b = !$b->get('field_posicion')->isEmpty() && is_numeric($b->get('field_posicion')->value);
+
+      // Si uno tiene posición y el otro no, el que tiene posición va primero.
+      if ($has_pos_a && !$has_pos_b) {
+        return -1;
+      }
+      if (!$has_pos_a && $has_pos_b) {
+        return 1;
+      }
+
+      // Si ambos tienen posición numérica, ordenar de menor a mayor (ASC).
+      if ($has_pos_a && $has_pos_b) {
+        $pos_a = (int) $a->get('field_posicion')->value;
+        $pos_b = (int) $b->get('field_posicion')->value;
+        if ($pos_a !== $pos_b) {
+          return $pos_a <=> $pos_b;
+        }
+        // Desempate por fecha de creación (más reciente primero).
+        return $b->getCreatedTime() <=> $a->getCreatedTime();
+      }
+
+      // Si ninguno tiene posición definida, ordenar por fecha de creación (más reciente primero).
+      return $b->getCreatedTime() <=> $a->getCreatedTime();
+    });
+
+    $data = [];
+    foreach ($filtered_nodes as $node) {
       $data[] = $this->formatSponsored($node);
     }
 
